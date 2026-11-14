@@ -8,7 +8,8 @@ let musicMuted = false;
 let nextLoopAt = 0;
 let musicTimer = 0;
 
-const songPromise = fetch("sombre-upbeat-percussion.mid")
+const songUrl = new URL("../assets/music/sombre-upbeat-percussion.mid", import.meta.url);
+const songPromise = fetch(songUrl)
   .then((response) => {
     if (!response.ok) throw new Error("Could not load song.mid");
     return response.arrayBuffer();
