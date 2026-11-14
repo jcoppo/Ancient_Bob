@@ -8,9 +8,10 @@
   <link rel="stylesheet" href="css/game.css">
 </head>
 <body>
-  <h1>Ancient Bob</h1>
   <div class="stage">
-    <button id="music" type="button" aria-pressed="false" aria-label="Turn music on">
+    <div class="topbar">
+      <h1>Ancient Bob</h1>
+      <button id="music" type="button" aria-pressed="false" aria-label="Turn music on">
       <svg class="icon-off" viewBox="0 0 24 24" aria-hidden="true">
         <path fill="currentColor" d="M3 9h4l5-4v14l-5-4H3z"/>
         <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9l5 6M21 9l-5 6"/>
@@ -20,7 +21,8 @@
         <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9a4 4 0 0 1 0 6"/>
         <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/>
       </svg>
-    </button>
+      </button>
+    </div>
     <div class="screen">
       <canvas id="game" width="384" height="384"></canvas>
       <div id="dialogue" hidden>
