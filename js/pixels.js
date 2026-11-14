@@ -129,6 +129,30 @@ export const GRASS_TILE = {
   ],
 };
 
+export const PATH_TILE = {
+  g: "#5f7c3a",
+  d: "#567433",
+  r: "#5a5854",
+  pixels: [
+    "gggrrrrggggrrrgg",
+    "gggrrrrggggrrrgg",
+    "gggrrrrggggrrrgg",
+    "gggggggggggggggg",
+    "rrrggggrrrrggggg",
+    "rrrggggrrrrggggg",
+    "rrrggggrrrrggdgg",
+    "gggggggggggggggg",
+    "ggggrrrrggggrrrg",
+    "ggggrrrrggggrrrg",
+    "ggggrrrrggggrrrg",
+    "gggggggggggggggg",
+    "rrggggrrrggggrrr",
+    "rrggggrrrggggrrr",
+    "rrggggrrrggggrrr",
+    "ggdggggggggggggg",
+  ],
+};
+
 export const WATER_TILE = {
   w: "#2f7ea0",
   l: "#3890b4",

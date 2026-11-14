@@ -1,5 +1,5 @@
 import { CELL, COLS, ROWS } from "./config.js";
-import { BUSH, GRASS_TILE, OUTLINE, PALETTE, SPRITES, WATER_TILE } from "./pixels.js";
+import { BUSH, GRASS_TILE, OUTLINE, PALETTE, PATH_TILE, SPRITES, WATER_TILE } from "./pixels.js";
 import { BUILDINGS, BUSHES, MAP } from "./world.js";
 import { player } from "./player.js";
 import { NPCS } from "./npcs.js";
@@ -84,7 +84,8 @@ function drawBuildings() {
 function drawGround() {
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      drawTile(MAP[y][x] === "w" ? WATER_TILE : GRASS_TILE, x, y);
+      const ground = MAP[y][x] === "w" ? WATER_TILE : MAP[y][x] === "p" ? PATH_TILE : GRASS_TILE;
+      drawTile(ground, x, y);
     }
   }
 }
