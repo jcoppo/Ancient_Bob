@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ancient Bob</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #14110e;
+      color: #e7dccb;
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    canvas {
+      width: min(88vmin, 768px);
+      height: min(88vmin, 768px);
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background: #000;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    }
+
+    p {
+      margin: 0;
+      max-width: min(88vmin, 768px);
+      font-size: 14px;
+      line-height: 1.45;
+      letter-spacing: 0.02em;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ancient Bob</h1>
+  <canvas id="game" width="384" height="384"></canvas>
+  <p id="status">Grid on · Arrows or WASD move one square · Q toggles the grid</p>
+  <script src="game.js"></script>
+</body>
+</html>
