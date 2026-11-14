@@ -1,6 +1,6 @@
 import { CELL, COLS, ROWS } from "./config.js";
 import { BUSH, GRASS_TILE, OUTLINE, PALETTE, PATH_TILE, SPRITES, WATER_TILE } from "./pixels.js";
-import { BUILDINGS, BUSHES, MAP } from "./world.js";
+import { BUILDINGS, BUSHES, MAP, areaIndex } from "./world.js";
 import { player } from "./player.js";
 import { NPCS } from "./npcs.js";
 import { showGrid } from "./input.js";
@@ -141,6 +141,8 @@ export function render() {
   drawBushes();
   drawBuildings();
   if (showGrid) drawGrid();
-  for (const npc of NPCS) drawCharacter(npc, npc.palette);
+  if (areaIndex === 0) {
+    for (const npc of NPCS) drawCharacter(npc, npc.palette);
+  }
   drawCharacter(player, PALETTE);
 }
