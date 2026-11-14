@@ -149,6 +149,15 @@ const MAP = [
   "gggggggggggggggggggggggg",
 ];
 
+// Placed once on open grass. Same spots every time the game loads.
+const BUILDINGS = [
+  { x: 9, y: 13, w: 3, h: 3 },
+  { x: 18, y: 14, w: 4, h: 3 },
+  { x: 4, y: 13, w: 3, h: 4 },
+  { x: 14, y: 5, w: 4, h: 4 },
+  { x: 6, y: 6, w: 3, h: 3 },
+];
+
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
 canvas.height = ROWS * CELL;
@@ -205,7 +214,7 @@ function update() {
   const ny = player.y + dy;
   player.facing = facing;
   if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) return;
-  if (MAP[ny][nx] === "w") return;
+  if (MAP[ny][nx] === "w" || buildingAt(nx, ny)) return;
 
   player.x = nx;
   player.y = ny;
@@ -221,6 +230,54 @@ function drawTile(tile, gridX, gridY) {
       ctx.fillRect(ox + x, oy + y, 1, 1);
     }
   }
+}
+
+function buildingAt(x, y) {
+  return BUILDINGS.some((building) => (
+    x >= building.x &&
+    x < building.x + building.w &&
+    y >= building.y &&
+    y < building.y + building.h
+  ));
+}
+
+function drawBuilding(building) {
+  const left = building.x * CELL;
+  const top = building.y * CELL;
+  const width = building.w * CELL;
+  const height = building.h * CELL;
+  const roofHeight = Math.max(8, Math.floor(height * 0.34));
+
+  ctx.fillStyle = "#8d4034";
+  for (let row = 0; row < roofHeight; row++) {
+    const inset = Math.floor(((roofHeight - row) * (width / 2 - 1)) / roofHeight);
+    ctx.fillRect(left + inset, top + row, width - inset * 2, 1);
+  }
+
+  const wallTop = top + roofHeight;
+  ctx.fillStyle = "#d7c09a";
+  ctx.fillRect(left + 1, wallTop, width - 2, height - roofHeight);
+  ctx.fillStyle = "#4a3424";
+  ctx.fillRect(left + 1, wallTop, width - 2, 2);
+
+  const doorWidth = 6;
+  const doorHeight = Math.min(12, height - roofHeight - 4);
+  ctx.fillStyle = "#3a2618";
+  ctx.fillRect(
+    left + Math.floor((width - doorWidth) / 2),
+    top + height - doorHeight,
+    doorWidth,
+    doorHeight
+  );
+
+  ctx.fillStyle = "#6eb4c8";
+  const windowY = wallTop + 4;
+  ctx.fillRect(left + 5, windowY, 6, 6);
+  if (building.w >= 4) ctx.fillRect(left + width - 11, windowY, 6, 6);
+}
+
+function drawBuildings() {
+  for (const building of BUILDINGS) drawBuilding(building);
 }
 
 function drawGround() {
@@ -279,6 +336,7 @@ function drawPlayer() {
 
 function render() {
   drawGround();
+  drawBuildings();
   if (showGrid) drawGrid();
   drawPlayer();
 }
