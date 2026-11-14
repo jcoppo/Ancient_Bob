@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ancient Bob</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
     html, body {
       margin: 0;
@@ -30,13 +31,47 @@
       text-align: center;
     }
 
-    canvas {
+    .stage {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
       width: min(88vmin, 768px);
-      height: min(88vmin, 768px);
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
       background: #000;
       box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    }
+
+    #music {
+      width: 44px;
+      height: 44px;
+      padding: 8px;
+      border: 2px solid #e7dccb;
+      background: rgba(20, 17, 14, 0.78);
+      color: #e7dccb;
+      cursor: pointer;
+    }
+
+    #music svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    #music .icon-on,
+    #music.is-on .icon-off {
+      display: none;
+    }
+
+    #music.is-on .icon-on {
+      display: block;
     }
 
     p {
@@ -51,8 +86,22 @@
 </head>
 <body>
   <h1>Ancient Bob</h1>
-  <canvas id="game" width="384" height="384"></canvas>
+  <div class="stage">
+    <button id="music" type="button" aria-pressed="false" aria-label="Turn music on">
+      <svg class="icon-off" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M3 9h4l5-4v14l-5-4H3z"/>
+        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9l5 6M21 9l-5 6"/>
+      </svg>
+      <svg class="icon-on" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M3 9h4l5-4v14l-5-4H3z"/>
+        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 9a4 4 0 0 1 0 6"/>
+        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/>
+      </svg>
+    </button>
+    <canvas id="game" width="384" height="384"></canvas>
+  </div>
   <p id="status">Grid on · Arrows or WASD move one square · Q toggles the grid</p>
+  <script src="music.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
