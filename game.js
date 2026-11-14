@@ -73,8 +73,81 @@ const SPRITES = {
   ],
 };
 
-const GROUND = "#5f7c3a";
 const OUTLINE = "#1a140f";
+
+const GRASS_TILE = {
+  g: "#5f7c3a",
+  d: "#567433",
+  pixels: [
+    "gggggggggggggggg",
+    "ggggggdggggggggg",
+    "gggggggggggggggg",
+    "ggggggggggggdggg",
+    "gggggggggggggggg",
+    "ggdggggggggggggg",
+    "gggggggggggggggg",
+    "gggggggggggggggg",
+    "gggggggggdgggggg",
+    "gggggggggggggggg",
+    "gggggggggggggggg",
+    "gggggdgggggggggg",
+    "gggggggggggggggg",
+    "ggggggggggggggdg",
+    "gggggggggggggggg",
+    "gggggggggggggggg",
+  ],
+};
+
+const WATER_TILE = {
+  w: "#2f7ea0",
+  l: "#3890b4",
+  pixels: [
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wlwwwwlwwwwlwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+    "wwwwlwwwwlwwwwlw",
+    "wwwwwwwwwwwwwwww",
+    "wwwwwwwwwwwwwwww",
+  ],
+};
+
+// One fixed shore. It meets the top and left edges and runs off the map.
+const MAP = [
+  "wwwwwwwwgggggggggggggggg",
+  "wwwwwwwwgggggggggggggggg",
+  "wwwwwwwwgggggggggggggggg",
+  "wwwwwwwwgggggggggggggggg",
+  "wwwwwwwggggggggggggggggg",
+  "wwwwwwgggggggggggggggggg",
+  "wwwwwwgggggggggggggggggg",
+  "wwwwwggggggggggggggggggg",
+  "wwwwwggggggggggggggggggg",
+  "wwwwgggggggggggggggggggg",
+  "wwwggggggggggggggggggggg",
+  "wggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+  "gggggggggggggggggggggggg",
+];
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -132,14 +205,30 @@ function update() {
   const ny = player.y + dy;
   player.facing = facing;
   if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) return;
+  if (MAP[ny][nx] === "w") return;
 
   player.x = nx;
   player.y = ny;
 }
 
+function drawTile(tile, gridX, gridY) {
+  const ox = gridX * CELL;
+  const oy = gridY * CELL;
+  for (let y = 0; y < CELL; y++) {
+    const row = tile.pixels[y];
+    for (let x = 0; x < CELL; x++) {
+      ctx.fillStyle = tile[row[x]];
+      ctx.fillRect(ox + x, oy + y, 1, 1);
+    }
+  }
+}
+
 function drawGround() {
-  ctx.fillStyle = GROUND;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      drawTile(MAP[y][x] === "w" ? WATER_TILE : GRASS_TILE, x, y);
+    }
+  }
 }
 
 function drawGrid() {
