@@ -16,6 +16,42 @@ const PALETTE = {
   K: "#1c1612",
 };
 
+const MAN_PALETTE = {
+  H: "#1a120c",
+  S: "#e4b48a",
+  E: "#1c1410",
+  M: "#b56b58",
+  T: "#3d5c8a",
+  B: "#24180f",
+  G: "#d7b15a",
+  L: "#2c3a52",
+  K: "#1c1612",
+};
+
+const WOMAN_PALETTE = {
+  H: "#6b3824",
+  S: "#f6cbb0",
+  E: "#1c1410",
+  M: "#c96b6b",
+  T: "#7a3e68",
+  B: "#3a2430",
+  G: "#e6c15a",
+  L: "#6a3458",
+  K: "#3a241c",
+};
+
+const OLD_MAN_PALETTE = {
+  H: "#e4e0d6",
+  S: "#ecd2b4",
+  E: "#1c1410",
+  M: "#b49888",
+  T: "#6e6854",
+  B: "#3a3428",
+  G: "#c6b48a",
+  L: "#5a5344",
+  K: "#2a241c",
+};
+
 const SPRITES = {
   down: [
     "................",
@@ -158,6 +194,57 @@ const BUILDINGS = [
   { x: 6, y: 6, w: 3, h: 3 },
 ];
 
+// Fixed bushes. b is a bush on grass. Same layout every load.
+const BUSHES = [
+  "......................b.",
+  "........................",
+  "........................",
+  "........b.......b.......",
+  "............b.b.........",
+  ".......b....b.....b.....",
+  "........................",
+  ".............b..........",
+  ".........b..............",
+  "....bb.......b...b......",
+  "....................b...",
+  "........................",
+  "....bb...b...........b..",
+  "..b.........b.b....bb...",
+  ".................b......",
+  "...b...b..............b.",
+  "b.......b....b..b.......",
+  "....b.bb............b...",
+  "......b.....b........bbb",
+  "..b.....................",
+  "................b.......",
+  "..b.........b...........",
+  "........................",
+  "......bb................",
+];
+
+const BUSH = {
+  b: "#3c6a30",
+  h: "#4d7c3c",
+  pixels: [
+    "................",
+    "................",
+    ".....bbbbbb.....",
+    "....bbbbbbbb....",
+    "...bbbbbbbbbb...",
+    "...bbbhbbbbbb...",
+    "..bbbbbbbbbbbb..",
+    "..bbbbbbbbbbbb..",
+    "..bbbbhbbbbbbb..",
+    "...bbbbbbbbbb...",
+    "...bbbbbbbbbb...",
+    "....bbbbbbbb....",
+    ".....bbbbbb.....",
+    "......bbbb......",
+    "................",
+    "................",
+  ],
+};
+
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
 canvas.height = ROWS * CELL;
@@ -170,6 +257,19 @@ const player = {
   y: Math.floor(ROWS / 2) - 1,
   facing: "down",
 };
+
+const NPCS = [
+  { x: 19, y: 8, facing: "down", palette: MAN_PALETTE, wait: 80 },
+  { x: 16, y: 18, facing: "left", palette: WOMAN_PALETTE, wait: 140 },
+  { x: 8, y: 18, facing: "right", palette: OLD_MAN_PALETTE, wait: 200 },
+];
+
+const STEP_DIRS = [
+  [0, -1, "up"],
+  [0, 1, "down"],
+  [-1, 0, "left"],
+  [1, 0, "right"],
+];
 let showGrid = true;
 const moveQueue = [];
 
@@ -205,7 +305,32 @@ window.addEventListener("keydown", (event) => {
   moveQueue.push(dir);
 });
 
+function blockedCell(x, y, ignoreNpc) {
+  if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return true;
+  if (MAP[y][x] === "w" || buildingAt(x, y) || bushAt(x, y)) return true;
+  if (player.x === x && player.y === y) return true;
+  return NPCS.some((npc) => npc !== ignoreNpc && npc.x === x && npc.y === y);
+}
+
+function updateNpcs() {
+  for (const npc of NPCS) {
+    npc.wait -= 1;
+    if (npc.wait > 0) continue;
+
+    npc.wait = 120 + Math.floor(Math.random() * 180);
+    const options = STEP_DIRS.filter(([dx, dy]) => !blockedCell(npc.x + dx, npc.y + dy, npc));
+    if (options.length === 0) continue;
+
+    const [dx, dy, facing] = options[Math.floor(Math.random() * options.length)];
+    npc.x += dx;
+    npc.y += dy;
+    npc.facing = facing;
+  }
+}
+
 function update() {
+  updateNpcs();
+
   const dir = moveQueue.shift();
   if (!dir) return;
 
@@ -213,8 +338,7 @@ function update() {
   const nx = player.x + dx;
   const ny = player.y + dy;
   player.facing = facing;
-  if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) return;
-  if (MAP[ny][nx] === "w" || buildingAt(nx, ny)) return;
+  if (blockedCell(nx, ny)) return;
 
   player.x = nx;
   player.y = ny;
@@ -228,6 +352,29 @@ function drawTile(tile, gridX, gridY) {
     for (let x = 0; x < CELL; x++) {
       ctx.fillStyle = tile[row[x]];
       ctx.fillRect(ox + x, oy + y, 1, 1);
+    }
+  }
+}
+
+function bushAt(x, y) {
+  return BUSHES[y][x] === "b";
+}
+
+function drawBushes() {
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (!bushAt(x, y)) continue;
+      const ox = x * CELL;
+      const oy = y * CELL;
+      for (let py = 0; py < CELL; py++) {
+        const row = BUSH.pixels[py];
+        for (let px = 0; px < CELL; px++) {
+          const color = BUSH[row[px]];
+          if (!color) continue;
+          ctx.fillStyle = color;
+          ctx.fillRect(ox + px, oy + py, 1, 1);
+        }
+      }
     }
   }
 }
@@ -302,31 +449,31 @@ function spritePixel(sprite, x, y) {
   return sprite[y][x];
 }
 
-function drawPlayer() {
-  const sprite = player.facing === "right" ? SPRITES.left : SPRITES[player.facing];
-  const flip = player.facing === "right";
-  const ox = player.x * CELL;
-  const oy = player.y * CELL;
+function drawCharacter(person, palette) {
+  const sprite = person.facing === "right" ? SPRITES.left : SPRITES[person.facing];
+  const flip = person.facing === "right";
+  const ox = person.x * CELL;
+  const oy = person.y * CELL;
 
   const screenX = (x) => (flip ? ox + (CELL - 1 - x) : ox + x);
 
   ctx.fillStyle = OUTLINE;
   for (let y = 0; y < sprite.length; y++) {
     for (let x = 0; x < sprite[y].length; x++) {
-      if (!PALETTE[spritePixel(sprite, x, y)]) continue;
+      if (!palette[spritePixel(sprite, x, y)]) continue;
       const px = screenX(x);
       const py = oy + y;
-      if (!PALETTE[spritePixel(sprite, x - 1, y)]) ctx.fillRect(screenX(x - 1), py, 1, 1);
-      if (!PALETTE[spritePixel(sprite, x + 1, y)]) ctx.fillRect(screenX(x + 1), py, 1, 1);
-      if (!PALETTE[spritePixel(sprite, x, y - 1)]) ctx.fillRect(px, py - 1, 1, 1);
-      if (!PALETTE[spritePixel(sprite, x, y + 1)]) ctx.fillRect(px, py + 1, 1, 1);
+      if (!palette[spritePixel(sprite, x - 1, y)]) ctx.fillRect(screenX(x - 1), py, 1, 1);
+      if (!palette[spritePixel(sprite, x + 1, y)]) ctx.fillRect(screenX(x + 1), py, 1, 1);
+      if (!palette[spritePixel(sprite, x, y - 1)]) ctx.fillRect(px, py - 1, 1, 1);
+      if (!palette[spritePixel(sprite, x, y + 1)]) ctx.fillRect(px, py + 1, 1, 1);
     }
   }
 
   for (let y = 0; y < sprite.length; y++) {
     const row = sprite[y];
     for (let x = 0; x < row.length; x++) {
-      const color = PALETTE[row[x]];
+      const color = palette[row[x]];
       if (!color) continue;
       ctx.fillStyle = color;
       ctx.fillRect(screenX(x), oy + y, 1, 1);
@@ -334,10 +481,20 @@ function drawPlayer() {
   }
 }
 
+function drawPlayer() {
+  drawCharacter(player, PALETTE);
+}
+
+function drawNpcs() {
+  for (const npc of NPCS) drawCharacter(npc, npc.palette);
+}
+
 function render() {
   drawGround();
+  drawBushes();
   drawBuildings();
   if (showGrid) drawGrid();
+  drawNpcs();
   drawPlayer();
 }
 
