@@ -1,7 +1,7 @@
-import { CELL } from "./config.js?v=22";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=22";
+import { CELL } from "./config.js?v=30";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=30";
 
-// w water, g grass, p rock path. The shore meets the top and left edges.
+// w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
   "wwwwgggggggggggggggg",
   "wwwwgggggggggggggggg",
@@ -118,6 +118,14 @@ const BUSH_MARKS = "b1234";
 
 export function bushAt(x, y) {
   return BUSH_MARKS.includes(BUSHES[y][x]);
+}
+
+export function tillGrass(x, y) {
+  if (y < 0 || x < 0 || y >= MAP.length || x >= MAP[y].length) return false;
+  if (MAP[y][x] !== "g" || bushAt(x, y) || buildingAt(x, y) || treeAt(x, y)) return false;
+  const row = MAP[y];
+  MAP[y] = row.slice(0, x) + "s" + row.slice(x + 1);
+  return true;
 }
 
 const TRUNK_BOX = {};

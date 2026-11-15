@@ -1,9 +1,10 @@
-import { CELL } from "./config.js?v=22";
-import { player } from "./player.js?v=22";
-import { areaIndex, cutBush } from "./world.js?v=22";
+import { CELL } from "./config.js?v=30";
+import { player } from "./player.js?v=30";
+import { areaIndex, cutBush, tillGrass } from "./world.js?v=30";
 
 export const items = [
-  { kind: "sword", area: 0, x: player.x + 2, y: player.y-1, held: false },
+  { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
+  { kind: "hoe", area: 0, x: player.x, y: player.y - 1, held: false },
 ];
 
 export function groundItems() {
@@ -32,6 +33,7 @@ export function dropItem() {
   item.y = player.y;
   player.holding = null;
   thrust.frame = -1;
+  scoop.frame = -1;
 }
 
 const SLASH_FRAMES = 6;
@@ -98,7 +100,7 @@ export function updateLeaves() {
 }
 
 export function startThrust() {
-  if (!heldItem()) return;
+  if (heldItem()?.kind !== "sword") return;
   thrust.facing = player.facing;
   thrust.x = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
   thrust.y = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
@@ -124,4 +126,30 @@ export function swordPose() {
     x: thrust.x,
     y: thrust.y,
   };
+}
+
+const SCOOP_FRAMES = 6;
+
+export const scoop = {
+  frame: -1,
+  facing: "down",
+};
+
+export function startScoop() {
+  if (heldItem()?.kind !== "hoe") return;
+  scoop.facing = player.facing;
+  scoop.frame = 0;
+  tillGrass(player.x, player.y);
+}
+
+export function updateScoop() {
+  if (scoop.frame < 0) return;
+  scoop.frame += 1;
+  if (scoop.frame >= SCOOP_FRAMES) scoop.frame = -1;
+}
+
+export function hoePose() {
+  const facing = scoop.frame < 0 ? player.facing : scoop.facing;
+  const t = scoop.frame < 0 ? 0 : Math.sin(((scoop.frame + 0.5) / SCOOP_FRAMES) * Math.PI);
+  return { facing, frame: scoop.frame, t };
 }

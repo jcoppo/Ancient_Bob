@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=22";
-import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=22";
-import { groundItems, heldItem, leaves, swordPose } from "./items.js?v=22";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=22";
-import { player } from "./player.js?v=22";
-import { NPCS } from "./npcs.js?v=22";
-import { barbarian } from "./enemies.js?v=22";
-import { showGrid } from "./input.js?v=22";
+import { CELL, COLS, ROWS } from "./config.js?v=30";
+import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=30";
+import { groundItems, heldItem, hoePose, leaves, swordPose } from "./items.js?v=30";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=30";
+import { player } from "./player.js?v=30";
+import { NPCS } from "./npcs.js?v=30";
+import { barbarian } from "./enemies.js?v=30";
+import { showGrid } from "./input.js?v=30";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -148,7 +148,8 @@ function drawBuildings(part) {
 function drawGround() {
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      const ground = MAP[y][x] === "w" ? WATER_TILE : MAP[y][x] === "p" ? PATH_TILE : GRASS_TILE;
+      const mark = MAP[y][x];
+      const ground = mark === "w" ? WATER_TILE : mark === "p" ? PATH_TILE : mark === "s" ? SOIL_TILE : GRASS_TILE;
       drawTile(ground, x, y);
     }
   }
@@ -286,6 +287,22 @@ function drawSword(ox, oy, facing) {
   drawPointedSprite(SWORD_SPRITE, SWORD_PALETTE, ox, oy, facing);
 }
 
+const HOE_HOLD = {
+  up: [4, 3],
+  down: [5, 3],
+  left: [-3, 3],
+  right: [6, 3],
+};
+
+function drawHoe(ox, oy) {
+  drawSprite(HOE_SPRITE, HOE_PALETTE, ox, oy, false);
+}
+
+function drawHeldHoe(slideX, slideY, pose) {
+  const [hx, hy] = HOE_HOLD[pose.facing];
+  drawHoe(slideX + hx, slideY + hy + Math.round(4 * pose.t));
+}
+
 function drawHeldSwordAt(slideX, slideY, pose) {
   const facing = pose.facing;
   const [hx, hy] = SWORD_HOLD[facing];
@@ -372,6 +389,7 @@ export function render() {
   if (showGrid) drawGrid();
   for (const item of groundItems()) {
     if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
+    if (item.kind === "hoe") drawHoe(item.x * CELL, item.y * CELL + CELL - HOE_SPRITE.length);
   }
   if (areaIndex === 0) {
     for (const npc of NPCS) if (npc.dead) drawCharacter(npc, npc.palette);
@@ -380,10 +398,14 @@ export function render() {
   }
   const slideX = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
   const slideY = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
-  const pose = heldItem()?.kind === "sword" ? swordPose() : null;
+  const held = heldItem();
+  const pose = held?.kind === "sword" ? swordPose() : null;
   const swordFacing = pose ? (pose.frame >= 0 ? pose.facing : player.facing) : null;
   const swordBehind = swordFacing === "up";
+  const hoe = held?.kind === "hoe" ? hoePose() : null;
+  const hoeBehind = hoe?.facing === "up";
   if (pose && swordBehind) drawHeldSwordAt(slideX, slideY, pose);
+  if (hoe && hoeBehind) drawHeldHoe(slideX, slideY, hoe);
   drawCharacter(player, PALETTE, slideX, slideY, player.step > 0 ? player.walk + 1 : 0);
   if (pose && pose.frame >= 0) drawSlash(pose.x, pose.y, pose.facing, pose.frame);
   for (const leaf of leaves) {
@@ -393,6 +415,7 @@ export function render() {
   }
   ctx.globalAlpha = 1;
   if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
+  if (hoe && !hoeBehind) drawHeldHoe(slideX, slideY, hoe);
   drawWater();
   drawBushes();
   drawBuildings("wall");

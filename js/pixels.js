@@ -457,6 +457,30 @@ export const SWORD_PALETTE = {
   h: "#6a4030",
 };
 
+export const HOE_PALETTE = {
+  w: "#e2b06a",
+  d: "#a56a38",
+  k: "#2c3034",
+  m: "#4e5358",
+  h: "#8b9196",
+};
+
+export const HOE_SPRITE = [
+  "......dwd.......",
+  "......dwd.......",
+  "......dwd.......",
+  "......dwd.......",
+  "......dwd.......",
+  "......dwd.......",
+  "......dwd.......",
+  ".....hkkkh......",
+  "......kkk.......",
+  ".....kkk........",
+  "...hmmmm........",
+  "..hmmmmmm.......",
+  "...mmmmm........",
+];
+
 export const SWORD_SPRITE = [
   ".......b........",
   "......dbd.......",
@@ -523,6 +547,29 @@ export const PATH_TILE = {
     "rrggggrrrggggrrr",
     "rrggggrrrggggrrr",
     "ggdggggggggggggg",
+  ],
+};
+
+export const SOIL_TILE = {
+  s: "#6b4630",
+  d: "#5a3c28",
+  pixels: [
+    "ssssssssssssssss",
+    "ssssssdsssssssss",
+    "ssssssssssssssss",
+    "ssssddddddddssss",
+    "ssssssssssssssss",
+    "ssdssssssssssdss",
+    "ssssssssssssssss",
+    "ssssssssssssssss",
+    "sssssssdssssssss",
+    "ssssddddddddssss",
+    "ssssssssssssssss",
+    "ssssssdsssssssss",
+    "ssssssssssssssss",
+    "sssssssssssssdss",
+    "ssssddddddddssss",
+    "ssssssssssssssss",
   ],
 };
 

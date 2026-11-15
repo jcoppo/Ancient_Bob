@@ -1,6 +1,6 @@
-import { npcInFront } from "./npcs.js?v=22";
-import { dialogueIsOpen, handleSpace } from "./dialogue.js?v=22";
-import { dropItem, heldItem, itemInReach, pickupItem, startThrust } from "./items.js?v=22";
+import { npcInFront } from "./npcs.js?v=30";
+import { dialogueIsOpen, handleSpace } from "./dialogue.js?v=30";
+import { dropItem, heldItem, itemInReach, pickupItem, startScoop, startThrust } from "./items.js?v=30";
 
 export let showGrid = false;
 
@@ -56,12 +56,19 @@ window.addEventListener("keydown", (event) => {
       handleSpace(npc);
       return;
     }
-    if (heldItem()) {
+    const held = heldItem();
+    if (held?.kind === "sword") {
       startThrust();
       return;
     }
-    const item = itemInReach();
-    if (item) pickupItem(item);
+    if (held?.kind === "hoe") {
+      startScoop();
+      return;
+    }
+    if (!held) {
+      const item = itemInReach();
+      if (item) pickupItem(item);
+    }
     return;
   }
 

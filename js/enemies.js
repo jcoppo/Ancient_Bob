@@ -1,9 +1,9 @@
-import { CELL, COLS, FPS } from "./config.js?v=22";
-import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=22";
-import { player } from "./player.js?v=22";
-import { NPCS } from "./npcs.js?v=22";
-import { blockedCell } from "./collision.js?v=22";
-import { areaIndex } from "./world.js?v=22";
+import { CELL, COLS, FPS } from "./config.js?v=30";
+import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=30";
+import { player } from "./player.js?v=30";
+import { NPCS } from "./npcs.js?v=30";
+import { blockedCell } from "./collision.js?v=30";
+import { areaIndex } from "./world.js?v=30";
 
 const BARBARIAN_ACTIVE = false;
 const SLIDE = 2;
