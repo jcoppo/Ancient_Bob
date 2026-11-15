@@ -1,10 +1,12 @@
-import { CELL } from "./config.js?v=54";
-import { player } from "./player.js?v=54";
-import { areaIndex, cutBush, tillGrass } from "./world.js?v=54";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=58";
+import { WHEAT_SPRITES } from "./pixels.js?v=58";
+import { player } from "./player.js?v=58";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=58";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
   { kind: "hoe", area: 0, x: player.x, y: player.y - 1, held: false },
+  { kind: "bag", area: 1, x: 3, y: 10, held: false },
 ];
 
 export const stores = { bread: 0, gold: 5 };
@@ -210,6 +212,106 @@ export function hoePose() {
   return { facing, frame: scoop.frame, t };
 }
 
+const SOW_FRAMES = 14;
+const SEED_SPOTS = [
+  [3, 11],
+  [6, 13],
+  [9, 10],
+  [12, 12],
+  [5, 14],
+  [8, 8],
+  [11, 14],
+  [4, 9],
+];
+const SEED_COLORS = ["#e6c15a", "#c4924a", "#8a5a32", "#f0d7a0"];
+
+export const sow = { frame: -1 };
+export const seeds = [];
+
+const STAGE_FRAMES = FPS * 4;
+
+export const crops = [];
+
+function plantWheat(x, y) {
+  if (crops.some((crop) => crop.area === areaIndex && crop.x === x && crop.y === y)) return;
+  crops.push({ area: areaIndex, x, y, stage: 0, wait: STAGE_FRAMES });
+}
+
+export function updateCrops() {
+  const last = WHEAT_SPRITES.length - 1;
+  for (const crop of crops) {
+    if (crop.stage >= last) continue;
+    crop.wait -= 1;
+    if (crop.wait > 0) continue;
+    crop.stage += 1;
+    crop.wait = STAGE_FRAMES;
+  }
+}
+
+export function cropSnapshot() {
+  return crops.map((crop) => ({
+    area: crop.area,
+    x: crop.x,
+    y: crop.y,
+    stage: crop.stage,
+    wait: crop.wait,
+  }));
+}
+
+export function applyCrops(saved) {
+  crops.length = 0;
+  if (!Array.isArray(saved)) return;
+  const last = WHEAT_SPRITES.length - 1;
+  for (const crop of saved) {
+    if (!Number.isInteger(crop?.area) || crop.area < 0 || crop.area >= areaList().length) continue;
+    if (!Number.isInteger(crop.x) || crop.x < 0 || crop.x >= COLS) continue;
+    if (!Number.isInteger(crop.y) || crop.y < 0 || crop.y >= ROWS) continue;
+    if (!Number.isInteger(crop.stage) || crop.stage < 0 || crop.stage > last) continue;
+    const wait = Number.isInteger(crop.wait) && crop.wait > 0 ? crop.wait : STAGE_FRAMES;
+    crops.push({ area: crop.area, x: crop.x, y: crop.y, stage: crop.stage, wait });
+  }
+}
+
+export function clearCrops() {
+  crops.length = 0;
+}
+
+export function startSow() {
+  if (heldItem()?.kind !== "bag" || sow.frame >= 0) return;
+  if (MAP[player.y]?.[player.x] !== "s") return;
+  plantWheat(player.x, player.y);
+  sow.frame = 0;
+  const ox = player.x * CELL;
+  const oy = player.y * CELL;
+  SEED_SPOTS.forEach(([px, py], index) => {
+    seeds.push({
+      x0: ox + 7,
+      y0: oy + 6,
+      x1: ox + px,
+      y1: oy + py,
+      color: SEED_COLORS[index % SEED_COLORS.length],
+      life: SOW_FRAMES,
+      max: SOW_FRAMES,
+    });
+  });
+}
+
+export function updateSow() {
+  if (sow.frame >= 0) {
+    sow.frame += 1;
+    if (sow.frame >= SOW_FRAMES) sow.frame = -1;
+  }
+  for (let i = seeds.length - 1; i >= 0; i--) {
+    seeds[i].life -= 1;
+    if (seeds[i].life <= 0) seeds.splice(i, 1);
+  }
+}
+
+export function bagPose() {
+  const t = sow.frame < 0 ? 0 : Math.sin((sow.frame / SOW_FRAMES) * Math.PI);
+  return { facing: player.facing, t };
+}
+
 const ITEM_START = items.map((item) => ({
   kind: item.kind,
   area: item.area,
@@ -228,6 +330,9 @@ export function resetItems() {
   player.holding = null;
   thrust.frame = -1;
   scoop.frame = -1;
+  sow.frame = -1;
+  seeds.length = 0;
+  clearCrops();
   leaves.length = 0;
   stores.bread = 0;
   stores.gold = 5;

@@ -1,5 +1,5 @@
-import { player } from "./player.js?v=54";
-import { giveBread, loafCanvas } from "./items.js?v=54";
+import { player } from "./player.js?v=58";
+import { giveBread, loafCanvas } from "./items.js?v=58";
 
 const BAKER_INTRO = "Hi, I am the baker. Here is a loaf! If you want more, bring me some wheat.";
 const BAKER_AGAIN = "Bring me wheat, and I will bake you another loaf.";
@@ -203,6 +203,7 @@ function continueDialogue() {
 }
 
 function openDialogue(npc) {
+  if (npc.name !== "Baker" && !npc.line) return;
   const facePlayer = { up: "down", down: "up", left: "right", right: "left" };
   npc.facing = facePlayer[player.facing];
   stopDialogueTimer();

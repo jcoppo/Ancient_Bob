@@ -1,9 +1,9 @@
-import { CELL, COLS, FPS } from "./config.js?v=54";
-import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=54";
-import { hurtPlayer, player } from "./player.js?v=54";
-import { NPCS } from "./npcs.js?v=54";
-import { blockedCell } from "./collision.js?v=54";
-import { areaIndex } from "./world.js?v=54";
+import { CELL, COLS, FPS } from "./config.js?v=58";
+import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=58";
+import { hurtPlayer, player } from "./player.js?v=58";
+import { NPCS } from "./npcs.js?v=58";
+import { blockedCell } from "./collision.js?v=58";
+import { areaIndex } from "./world.js?v=58";
 
 const BARBARIAN_ACTIVE = false;
 const SLIDE = 2;
@@ -29,7 +29,7 @@ export const barbarian = {
 };
 
 function nearestTarget() {
-  const people = [{ x: player.x, y: player.y }, ...NPCS.filter((npc) => !npc.dead)];
+  const people = [{ x: player.x, y: player.y }, ...NPCS.filter((npc) => !npc.dead && (npc.area ?? 0) === 0)];
   let best = null;
   let bestDist = Infinity;
   for (const person of people) {
@@ -70,7 +70,7 @@ function strike() {
   const offset = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[barbarian.attack.facing];
   const x = barbarian.x + offset[0];
   const y = barbarian.y + offset[1];
-  const npc = NPCS.find((person) => !person.dead && person.x === x && person.y === y);
+  const npc = NPCS.find((person) => !person.dead && (person.area ?? 0) === 0 && person.x === x && person.y === y);
   if (npc) npc.dead = true;
   const onPlayer = player.x === x && player.y === y;
   const slidingIn = player.step > 0 && !player.wrap && player.x + player.dx === x && player.y + player.dy === y;

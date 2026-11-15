@@ -1,13 +1,13 @@
-import { COLS, ROWS } from "./config.js?v=54";
-import { healPlayer, player, resetPlayer } from "./player.js?v=54";
-import { coinCanvas, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=54";
-import { NPCS, resetNpcs } from "./npcs.js?v=54";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=54";
+import { COLS, ROWS } from "./config.js?v=58";
+import { healPlayer, player, resetPlayer } from "./player.js?v=58";
+import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=58";
+import { NPCS, resetNpcs } from "./npcs.js?v=58";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=58";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
 const CONFIRM = ["Yes", "No"];
-const ITEM_NAMES = { sword: "Sword", hoe: "Garden Hoe", bread: "Bread loaf" };
+const ITEM_NAMES = { sword: "Sword", hoe: "Garden Hoe", bag: "Seed Bag", bread: "Bread loaf" };
 const FACINGS = ["up", "down", "left", "right"];
 const CELL_PX = 6;
 const MAP_GAP = 12;
@@ -403,6 +403,7 @@ function saveGame() {
       met: !!npc.met,
     })),
     stores: { bread: stores.bread, gold: stores.gold },
+    crops: cropSnapshot(),
   };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -455,6 +456,7 @@ export function loadGame() {
 
   if (Number.isInteger(data.stores?.bread) && data.stores.bread >= 0) stores.bread = data.stores.bread;
   if (Number.isInteger(data.stores?.gold) && data.stores.gold >= 0) stores.gold = data.stores.gold;
+  applyCrops(data.crops);
 
   if (!Array.isArray(data.npcs)) return;
   for (const saved of data.npcs) {

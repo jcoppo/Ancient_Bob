@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=54";
-import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=54";
-import { groundItems, heldItem, hoePose, leaves, swordPose } from "./items.js?v=54";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=54";
-import { player } from "./player.js?v=54";
-import { NPCS } from "./npcs.js?v=54";
-import { barbarian } from "./enemies.js?v=54";
-import { showGrid } from "./input.js?v=54";
+import { CELL, COLS, ROWS } from "./config.js?v=58";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=58";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=58";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=58";
+import { player } from "./player.js?v=58";
+import { NPCS } from "./npcs.js?v=58";
+import { barbarian } from "./enemies.js?v=58";
+import { showGrid } from "./input.js?v=58";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -259,6 +259,16 @@ function drawGround() {
   }
 }
 
+function drawCrops() {
+  const here = crops.filter((crop) => crop.area === areaIndex).sort((a, b) => a.y - b.y);
+  for (const crop of here) {
+    const sprite = WHEAT_SPRITES[crop.stage];
+    if (!sprite) continue;
+    const ox = crop.x * CELL + Math.floor((CELL - sprite[0].length) / 2);
+    drawSprite(sprite, WHEAT_PALETTE, ox, (crop.y + 1) * CELL - sprite.length, false);
+  }
+}
+
 function drawWater() {
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
@@ -407,6 +417,32 @@ function drawHeldHoe(slideX, slideY, pose) {
   drawHoe(slideX + hx, slideY + hy + Math.round(4 * pose.t));
 }
 
+const BAG_HOLD = {
+  up: [0, 2],
+  down: [0, 6],
+  left: [-4, 6],
+  right: [4, 6],
+};
+
+function drawBag(ox, oy) {
+  drawSprite(BAG_SPRITE, BAG_PALETTE, ox, oy, false);
+}
+
+function drawHeldBag(slideX, slideY, pose) {
+  const [hx, hy] = BAG_HOLD[pose.facing];
+  drawBag(slideX + hx, slideY + hy + Math.round(3 * pose.t));
+}
+
+function drawSeeds() {
+  for (const seed of seeds) {
+    const t = 1 - seed.life / seed.max;
+    const x = Math.round(seed.x0 + (seed.x1 - seed.x0) * t);
+    const y = Math.round(seed.y0 + (seed.y1 - seed.y0) * t + Math.sin(t * Math.PI) * -4);
+    ctx.fillStyle = seed.color;
+    ctx.fillRect(x, y, 2, 2);
+  }
+}
+
 function drawHeldSwordAt(slideX, slideY, pose) {
   const facing = pose.facing;
   const [hx, hy] = SWORD_HOLD[facing];
@@ -472,6 +508,15 @@ function drawSlash(worldX, worldY, facing, frame) {
   }
 }
 
+function drawNpc(npc) {
+  const x = npc.x * CELL;
+  const y = npc.y * CELL;
+  const hoe = npc.tool === "hoe" ? { facing: npc.facing, t: 0 } : null;
+  if (hoe && npc.facing === "up") drawHeldHoe(x, y, hoe);
+  drawCharacter(npc, npc.palette);
+  if (hoe && npc.facing !== "up") drawHeldHoe(x, y, hoe);
+}
+
 function drawBarbarian() {
   if (!barbarian.entered) return;
   const attack = barbarian.attack;
@@ -490,16 +535,22 @@ function drawBarbarian() {
 
 export function render() {
   drawGround();
+  drawCrops();
   if (showGrid) drawGrid();
   for (const item of groundItems()) {
     if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
     if (item.kind === "hoe") drawHoe(item.x * CELL, item.y * CELL + CELL - HOE_SPRITE.length);
+    if (item.kind === "bag") drawBag(item.x * CELL, item.y * CELL + CELL - BAG_SPRITE.length);
   }
-  if (areaIndex === 0) {
-    for (const npc of NPCS) if (npc.dead) drawCharacter(npc, npc.palette);
-    for (const npc of NPCS) if (!npc.dead) drawCharacter(npc, npc.palette);
-    drawBarbarian();
+  for (const npc of NPCS) {
+    if ((npc.area ?? 0) !== areaIndex) continue;
+    if (npc.dead) drawCharacter(npc, npc.palette);
   }
+  for (const npc of NPCS) {
+    if ((npc.area ?? 0) !== areaIndex || npc.dead) continue;
+    drawNpc(npc);
+  }
+  if (areaIndex === 0) drawBarbarian();
   const slideX = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
   const slideY = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
   const held = heldItem();
@@ -508,8 +559,11 @@ export function render() {
   const swordBehind = swordFacing === "up";
   const hoe = held?.kind === "hoe" ? hoePose() : null;
   const hoeBehind = hoe?.facing === "up";
+  const bag = held?.kind === "bag" ? bagPose() : null;
+  const bagBehind = bag?.facing === "up";
   if (pose && swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   if (hoe && hoeBehind) drawHeldHoe(slideX, slideY, hoe);
+  if (bag && bagBehind) drawHeldBag(slideX, slideY, bag);
   drawCharacter(player, PALETTE, slideX, slideY, player.step > 0 ? player.walk + 1 : 0);
   if (pose && pose.frame >= 0) drawSlash(pose.x, pose.y, pose.facing, pose.frame);
   for (const leaf of leaves) {
@@ -520,6 +574,8 @@ export function render() {
   ctx.globalAlpha = 1;
   if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   if (hoe && !hoeBehind) drawHeldHoe(slideX, slideY, hoe);
+  if (bag && !bagBehind) drawHeldBag(slideX, slideY, bag);
+  drawSeeds();
   drawWater();
   drawBushes();
   drawBuildings("wall");

@@ -1,5 +1,5 @@
-import { CELL, COLS, ROWS } from "./config.js?v=54";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=54";
+import { CELL, COLS, ROWS } from "./config.js?v=58";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=58";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -60,6 +60,22 @@ const VILLAGE_BUSHES = [
 ];
 
 const MEADOW_MAP = Array.from({ length: 20 }, () => "gggggggggggggggggggg");
+
+// Two rows of soil under the left pine. x is the column range, y the row range.
+const MEADOW_PLOT = { x0: 4, x1: 9, y0: 9, y1: 11 };
+
+function stampSoil(map, plot) {
+  for (let y = plot.y0; y < plot.y1; y++) {
+    let row = map[y];
+    for (let x = plot.x0; x < plot.x1; x++) {
+      if (row[x] !== "g") continue;
+      row = row.slice(0, x) + "s" + row.slice(x + 1);
+    }
+    map[y] = row;
+  }
+}
+
+stampSoil(MEADOW_MAP, MEADOW_PLOT);
 
 // Open on the left. Bushes seal the top, bottom, and right, with more scattered inside.
 const MEADOW_BUSHES = [
@@ -150,6 +166,7 @@ export function applySavedTerrain(saved) {
     area.map.forEach((row, y) => { AREAS[index].map[y] = row; });
     area.bushes.forEach((row, y) => { AREAS[index].bushes[y] = row; });
   });
+  stampSoil(AREAS[1].map, MEADOW_PLOT);
   enterArea(areaIndex);
   return true;
 }
@@ -249,6 +266,6 @@ export function crossingBlocked(nextIndex, x, y, npcs) {
   if (area.map[y][x] === "w" || BUSH_MARKS.includes(area.bushes[y][x])) return true;
   if (area.trees.some((tree) => trunkHits(tree, x, y))) return true;
   if (hitsWall(area.buildings, x, y)) return true;
-  if (nextIndex === 0 && npcs.some((npc) => npc.x === x && npc.y === y)) return true;
+  if (npcs.some((npc) => (npc.area ?? 0) === nextIndex && npc.x === x && npc.y === y)) return true;
   return false;
 }

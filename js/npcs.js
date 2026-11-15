@@ -1,7 +1,26 @@
-import { BAKER_PALETTE, BAKER_SPRITES, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=54";
-import { player } from "./player.js?v=54";
-import { blockedCell } from "./collision.js?v=54";
-import { areaIndex } from "./world.js?v=54";
+import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=58";
+import { player } from "./player.js?v=58";
+import { blockedCell } from "./collision.js?v=58";
+import { areaIndex } from "./world.js?v=58";
+
+function hat(sprite, rows) {
+  return rows.concat(sprite.slice(rows.length));
+}
+
+const FARMER_SPRITES = {
+  down: hat(FARM_SPRITES.down, [
+    "....HHHHHHHH....",
+    "...HHHHHHHHHH...",
+  ]),
+  up: hat(FARM_SPRITES.up, [
+    "...HHHHHHHHHH...",
+    "..HHHHHHHHHHHH..",
+  ]),
+  left: hat(FARM_SPRITES.left, [
+    "...HHHHHHHH.....",
+    "....HHHHHHH.....",
+  ]),
+};
 
 const STEP_DIRS = [
   [0, -1, "up"],
@@ -50,6 +69,20 @@ export const NPCS = [
     wait: 160,
     met: false,
   },
+  {
+    name: "Farmer",
+    area: 1,
+    x: 6,
+    y: 11,
+    homeX: 6,
+    homeY: 11,
+    facing: "down",
+    palette: FARMER_PALETTE,
+    sprites: FARMER_SPRITES,
+    holding: "hoe",
+    tool: "hoe",
+    wait: 160,
+  },
 ];
 
 const NPC_START = NPCS.map((npc) => ({
@@ -73,11 +106,10 @@ export function resetNpcs() {
 }
 
 export function npcInFront() {
-  if (areaIndex !== 0) return undefined;
   const offset = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[player.facing];
   const x = player.x + offset[0];
   const y = player.y + offset[1];
-  return NPCS.find((npc) => !npc.dead && npc.x === x && npc.y === y);
+  return NPCS.find((npc) => !npc.dead && (npc.area ?? 0) === areaIndex && npc.x === x && npc.y === y);
 }
 
 function updateBaker(npc) {
@@ -95,9 +127,8 @@ function updateBaker(npc) {
 }
 
 export function updateNpcs() {
-  if (areaIndex !== 0) return;
   for (const npc of NPCS) {
-    if (npc.dead) continue;
+    if (npc.dead || (npc.area ?? 0) !== areaIndex) continue;
     if (npc.homeX !== undefined) {
       updateBaker(npc);
       continue;
