@@ -1,10 +1,10 @@
-import { CELL, COLS, ROWS } from "./config.js?v=7";
-import { BUSH, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=7";
-import { groundItems, heldItem, swordPose } from "./items.js?v=7";
-import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=7";
-import { player } from "./player.js?v=7";
-import { NPCS } from "./npcs.js?v=7";
-import { showGrid } from "./input.js?v=7";
+import { CELL, COLS, ROWS } from "./config.js?v=12";
+import { BUSH, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=12";
+import { groundItems, heldItem, leaves, swordPose } from "./items.js?v=12";
+import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=12";
+import { player } from "./player.js?v=12";
+import { NPCS } from "./npcs.js?v=12";
+import { showGrid } from "./input.js?v=12";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -334,6 +334,12 @@ export function render() {
   if (pose && swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   drawCharacter(player, PALETTE, slideX, slideY, player.step > 0 ? player.walk + 1 : 0);
   if (pose && pose.frame >= 0) drawSlash(pose.x, pose.y, pose.facing, pose.frame);
+  for (const leaf of leaves) {
+    ctx.globalAlpha = leaf.life / leaf.max;
+    ctx.fillStyle = leaf.color;
+    ctx.fillRect(Math.round(leaf.x), Math.round(leaf.y), leaf.size, leaf.size);
+  }
+  ctx.globalAlpha = 1;
   if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   drawBuildings("roof");
 }

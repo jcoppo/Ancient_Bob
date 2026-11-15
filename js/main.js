@@ -1,12 +1,12 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js?v=7";
-import { NPCS, updateNpcs } from "./npcs.js?v=7";
-import { player, updatePlayer } from "./player.js?v=7";
-import { blockedCell } from "./collision.js?v=7";
-import { dialogueIsOpen } from "./dialogue.js?v=7";
-import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=7";
-import { heldDirection } from "./input.js?v=7";
-import { updateThrust } from "./items.js?v=7";
-import { render } from "./render.js?v=7";
+import { COLS, FRAME_MS, ROWS } from "./config.js?v=12";
+import { NPCS, updateNpcs } from "./npcs.js?v=12";
+import { player, updatePlayer } from "./player.js?v=12";
+import { blockedCell } from "./collision.js?v=12";
+import { dialogueIsOpen } from "./dialogue.js?v=12";
+import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=12";
+import { heldDirection } from "./input.js?v=12";
+import { updateLeaves, updateThrust } from "./items.js?v=12";
+import { render } from "./render.js?v=12";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;
@@ -29,6 +29,7 @@ function tryStep(dx, dy) {
 function update() {
   if (!dialogueIsOpen()) updateNpcs();
   updateThrust();
+  updateLeaves();
   updatePlayer(heldDirection(), tryStep);
 }
 

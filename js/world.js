@@ -1,4 +1,4 @@
-import { CELL } from "./config.js?v=7";
+import { CELL } from "./config.js?v=12";
 
 // w water, g grass, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -102,6 +102,14 @@ export function enterArea(index) {
 
 export function bushAt(x, y) {
   return BUSHES[y][x] === "b";
+}
+
+export function cutBush(x, y) {
+  if (y < 0 || x < 0 || y >= BUSHES.length || x >= BUSHES[y].length) return false;
+  if (BUSHES[y][x] !== "b") return false;
+  const row = BUSHES[y];
+  BUSHES[y] = row.slice(0, x) + "." + row.slice(x + 1);
+  return true;
 }
 
 export function buildingRoofPixels(building) {

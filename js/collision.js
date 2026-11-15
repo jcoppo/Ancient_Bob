@@ -1,5 +1,5 @@
-import { COLS, ROWS } from "./config.js?v=7";
-import { MAP, areaIndex, buildingAt, bushAt } from "./world.js?v=7";
+import { COLS, ROWS } from "./config.js?v=12";
+import { MAP, areaIndex, buildingAt, bushAt } from "./world.js?v=12";
 
 export function blockedCell(x, y, player, npcs, ignoreNpc) {
   if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return true;
