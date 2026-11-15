@@ -1,4 +1,4 @@
-import { CELL } from "./config.js?v=30";
+import { CELL } from "./config.js?v=33";
 
 const SLIDE = 2;
 
@@ -11,7 +11,13 @@ export const player = {
   step: 0,
   walk: 0,
   wrap: false,
+  hp: 5,
+  maxHp: 5,
 };
+
+export function hurtPlayer(amount) {
+  player.hp = Math.max(0, player.hp - amount);
+}
 
 export function updatePlayer(dir, tryStep) {
   let continuing = false;

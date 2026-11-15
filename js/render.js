@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=30";
-import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=30";
-import { groundItems, heldItem, hoePose, leaves, swordPose } from "./items.js?v=30";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=30";
-import { player } from "./player.js?v=30";
-import { NPCS } from "./npcs.js?v=30";
-import { barbarian } from "./enemies.js?v=30";
-import { showGrid } from "./input.js?v=30";
+import { CELL, COLS, ROWS } from "./config.js?v=33";
+import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=33";
+import { groundItems, heldItem, hoePose, leaves, swordPose } from "./items.js?v=33";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=33";
+import { player } from "./player.js?v=33";
+import { NPCS } from "./npcs.js?v=33";
+import { barbarian } from "./enemies.js?v=33";
+import { showGrid } from "./input.js?v=33";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -422,4 +422,68 @@ export function render() {
   drawTrees("trunk");
   drawBuildings("roof");
   drawTrees("leaf");
+  drawHealth();
+}
+
+const HEART = [
+  ".#.#.",
+  "#####",
+  "#####",
+  ".###.",
+  "..#..",
+];
+
+const DIGITS = {
+  0: ["###", "#.#", "#.#", "#.#", "###"],
+  1: [".#.", "##.", ".#.", ".#.", "###"],
+  2: ["###", "..#", "###", "#..", "###"],
+  3: ["###", "..#", "###", "..#", "###"],
+  4: ["#.#", "#.#", "###", "..#", "..#"],
+  5: ["###", "#..", "###", "..#", "###"],
+  6: ["###", "#..", "###", "#.#", "###"],
+  7: ["###", "..#", "..#", "..#", "..#"],
+  8: ["###", "#.#", "###", "#.#", "###"],
+  9: ["###", "#.#", "###", "..#", "###"],
+  "/": ["..#", "..#", ".#.", "#..", "#.."],
+};
+
+function drawGlyph(rows, ox, oy, color) {
+  ctx.fillStyle = "#1a140f";
+  for (let y = 0; y < rows.length; y++) {
+    for (let x = 0; x < rows[y].length; x++) {
+      if (rows[y][x] !== "#") continue;
+      ctx.fillRect(ox + x - 1, oy + y, 1, 1);
+      ctx.fillRect(ox + x + 1, oy + y, 1, 1);
+      ctx.fillRect(ox + x, oy + y - 1, 1, 1);
+      ctx.fillRect(ox + x, oy + y + 1, 1, 1);
+    }
+  }
+  ctx.fillStyle = color;
+  for (let y = 0; y < rows.length; y++) {
+    for (let x = 0; x < rows[y].length; x++) {
+      if (rows[y][x] === "#") ctx.fillRect(ox + x, oy + y, 1, 1);
+    }
+  }
+}
+
+function drawHealth() {
+  const x0 = 4;
+  const y0 = 4;
+  drawGlyph(HEART, x0, y0, "#c4473a");
+  let textX = x0 + HEART[0].length + 3;
+  for (const ch of `${player.hp}/${player.maxHp}`) {
+    const glyph = DIGITS[ch];
+    drawGlyph(glyph, textX, y0, "#f6edd4");
+    textX += glyph[0].length + 1;
+  }
+  const barY = y0 + HEART.length + 2;
+  const barW = player.maxHp * 6;
+  const barH = 3;
+  const filled = Math.round((player.hp / player.maxHp) * barW);
+  ctx.fillStyle = "#1a140f";
+  ctx.fillRect(x0 - 1, barY - 1, barW + 2, barH + 2);
+  ctx.fillStyle = "#3a2e28";
+  ctx.fillRect(x0, barY, barW, barH);
+  ctx.fillStyle = "#c4473a";
+  ctx.fillRect(x0, barY, filled, barH);
 }

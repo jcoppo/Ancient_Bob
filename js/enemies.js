@@ -1,9 +1,9 @@
-import { CELL, COLS, FPS } from "./config.js?v=30";
-import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=30";
-import { player } from "./player.js?v=30";
-import { NPCS } from "./npcs.js?v=30";
-import { blockedCell } from "./collision.js?v=30";
-import { areaIndex } from "./world.js?v=30";
+import { CELL, COLS, FPS } from "./config.js?v=33";
+import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=33";
+import { hurtPlayer, player } from "./player.js?v=33";
+import { NPCS } from "./npcs.js?v=33";
+import { blockedCell } from "./collision.js?v=33";
+import { areaIndex } from "./world.js?v=33";
 
 const BARBARIAN_ACTIVE = false;
 const SLIDE = 2;
@@ -72,6 +72,9 @@ function strike() {
   const y = barbarian.y + offset[1];
   const npc = NPCS.find((person) => !person.dead && person.x === x && person.y === y);
   if (npc) npc.dead = true;
+  const onPlayer = player.x === x && player.y === y;
+  const slidingIn = player.step > 0 && !player.wrap && player.x + player.dx === x && player.y + player.dy === y;
+  if (onPlayer || slidingIn) hurtPlayer(2);
 }
 
 function beginEntrance() {
