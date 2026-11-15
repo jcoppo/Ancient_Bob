@@ -1,4 +1,4 @@
-import { CELL } from "./config.js?v=12";
+import { CELL } from "./config.js?v=14";
 
 // w water, g grass, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [

@@ -1,12 +1,13 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js?v=12";
-import { NPCS, updateNpcs } from "./npcs.js?v=12";
-import { player, updatePlayer } from "./player.js?v=12";
-import { blockedCell } from "./collision.js?v=12";
-import { dialogueIsOpen } from "./dialogue.js?v=12";
-import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=12";
-import { heldDirection } from "./input.js?v=12";
-import { updateLeaves, updateThrust } from "./items.js?v=12";
-import { render } from "./render.js?v=12";
+import { COLS, FRAME_MS, ROWS } from "./config.js?v=14";
+import { NPCS, updateNpcs } from "./npcs.js?v=14";
+import { updateBarbarian } from "./enemies.js?v=14";
+import { player, updatePlayer } from "./player.js?v=14";
+import { blockedCell } from "./collision.js?v=14";
+import { dialogueIsOpen } from "./dialogue.js?v=14";
+import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=14";
+import { heldDirection } from "./input.js?v=14";
+import { updateLeaves, updateThrust } from "./items.js?v=14";
+import { render } from "./render.js?v=14";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;
@@ -27,7 +28,10 @@ function tryStep(dx, dy) {
 }
 
 function update() {
-  if (!dialogueIsOpen()) updateNpcs();
+  if (!dialogueIsOpen()) {
+    updateNpcs();
+    updateBarbarian();
+  }
   updateThrust();
   updateLeaves();
   updatePlayer(heldDirection(), tryStep);

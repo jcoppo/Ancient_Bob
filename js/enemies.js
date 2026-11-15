@@ -1,0 +1,127 @@
+import { CELL } from "./config.js?v=14";
+import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=14";
+import { player } from "./player.js?v=14";
+import { NPCS } from "./npcs.js?v=14";
+import { blockedCell } from "./collision.js?v=14";
+import { areaIndex } from "./world.js?v=14";
+
+const SLIDE = 2;
+const SLASH_FRAMES = 6;
+
+export const barbarian = {
+  x: 18,
+  y: 1,
+  facing: "down",
+  palette: BARBARIAN_PALETTE,
+  sprites: HOOD_SPRITES,
+  walkSprites: HOOD_WALK,
+  holding: "sword",
+  dx: 0,
+  dy: 0,
+  step: 0,
+  walk: 0,
+  attack: { frame: -1, facing: "down", x: 0, y: 0 },
+};
+
+function nearestTarget() {
+  const people = [{ x: player.x, y: player.y }, ...NPCS.filter((npc) => !npc.dead)];
+  let best = null;
+  let bestDist = Infinity;
+  for (const person of people) {
+    const dist = Math.abs(person.x - barbarian.x) + Math.abs(person.y - barbarian.y);
+    if (dist < bestDist) {
+      best = person;
+      bestDist = dist;
+    }
+  }
+  return best;
+}
+
+function facingOf(dx, dy) {
+  if (dx < 0) return "left";
+  if (dx > 0) return "right";
+  if (dy < 0) return "up";
+  return "down";
+}
+
+function stepToward(tx, ty) {
+  const dx = Math.sign(tx - barbarian.x);
+  const dy = Math.sign(ty - barbarian.y);
+  const xFirst = Math.abs(tx - barbarian.x) >= Math.abs(ty - barbarian.y);
+  const options = [];
+  if (dx && xFirst) options.push([dx, 0]);
+  if (dy) options.push([0, dy]);
+  if (dx && !xFirst) options.push([dx, 0]);
+  const crowd = NPCS.concat(barbarian);
+  for (const [sx, sy] of options) {
+    if (!blockedCell(barbarian.x + sx, barbarian.y + sy, player, crowd, barbarian)) {
+      return [sx, sy, facingOf(sx, sy)];
+    }
+  }
+  return null;
+}
+
+function strike() {
+  const offset = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[barbarian.attack.facing];
+  const x = barbarian.x + offset[0];
+  const y = barbarian.y + offset[1];
+  const npc = NPCS.find((person) => !person.dead && person.x === x && person.y === y);
+  if (npc) npc.dead = true;
+}
+
+function beginSlash(facing) {
+  barbarian.facing = facing;
+  barbarian.walk = 0;
+  barbarian.attack.facing = facing;
+  barbarian.attack.x = barbarian.x * CELL;
+  barbarian.attack.y = barbarian.y * CELL;
+  barbarian.attack.frame = 0;
+}
+
+export function updateBarbarian() {
+  if (areaIndex !== 0) return;
+  const attack = barbarian.attack;
+  if (attack.frame >= 0) {
+    attack.frame += 1;
+    if (attack.frame === 1) strike();
+    if (attack.frame >= SLASH_FRAMES) attack.frame = -1;
+    return;
+  }
+
+  let continuing = false;
+  if (barbarian.step > 0) {
+    barbarian.step += SLIDE;
+    if (barbarian.step % (CELL / 2) === 0) barbarian.walk ^= 1;
+    if (barbarian.step < CELL) return;
+    barbarian.x += barbarian.dx;
+    barbarian.y += barbarian.dy;
+    barbarian.step = 0;
+    barbarian.dx = 0;
+    barbarian.dy = 0;
+    continuing = true;
+  }
+
+  const target = nearestTarget();
+  if (!target) {
+    barbarian.walk = 0;
+    return;
+  }
+
+  const dx = target.x - barbarian.x;
+  const dy = target.y - barbarian.y;
+  if (Math.abs(dx) + Math.abs(dy) === 1) {
+    beginSlash(facingOf(dx, dy));
+    return;
+  }
+
+  const step = stepToward(target.x, target.y);
+  if (!step) {
+    barbarian.walk = 0;
+    return;
+  }
+  barbarian.facing = step[2];
+  barbarian.dx = step[0];
+  barbarian.dy = step[1];
+  barbarian.step = SLIDE;
+  if (!continuing) barbarian.walk = 1;
+}

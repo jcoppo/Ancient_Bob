@@ -1,10 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=12";
-import { BUSH, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=12";
-import { groundItems, heldItem, leaves, swordPose } from "./items.js?v=12";
-import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=12";
-import { player } from "./player.js?v=12";
-import { NPCS } from "./npcs.js?v=12";
-import { showGrid } from "./input.js?v=12";
+import { CELL, COLS, ROWS } from "./config.js?v=14";
+import { BUSH, CORPSE, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=14";
+import { groundItems, heldItem, leaves, swordPose } from "./items.js?v=14";
+import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=14";
+import { player } from "./player.js?v=14";
+import { NPCS } from "./npcs.js?v=14";
+import { barbarian } from "./enemies.js?v=14";
+import { showGrid } from "./input.js?v=14";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -211,8 +212,11 @@ function drawPointedSprite(sprite, palette, ox, oy, facing) {
 }
 
 function characterSprite(person, frame) {
+  if (person.dead) return CORPSE;
   const facingKey = person.facing === "right" ? "left" : person.facing;
-  const base = frame === 0 ? SPRITES[facingKey] : WALK_SPRITES[frame - 1][facingKey];
+  const stand = person.sprites || SPRITES;
+  const walks = person.walkSprites || WALK_SPRITES;
+  const base = frame === 0 ? stand[facingKey] : walks[frame - 1][facingKey];
   if (!person.holding) return base;
   const arms = HOLD_ARMS[facingKey];
   return base.map((row, index) => arms[index] || row);
@@ -220,7 +224,7 @@ function characterSprite(person, frame) {
 
 function drawCharacter(person, palette, originX = person.x * CELL, originY = person.y * CELL, frame = 0) {
   const sprite = characterSprite(person, frame);
-  drawSprite(sprite, palette, originX, originY, person.facing === "right");
+  drawSprite(sprite, palette, originX, originY, !person.dead && person.facing === "right");
 }
 
 const SWORD_HOLD = {
@@ -251,7 +255,7 @@ function drawSword(ox, oy, facing) {
 }
 
 function drawHeldSwordAt(slideX, slideY, pose) {
-  const facing = pose.frame >= 0 ? pose.facing : player.facing;
+  const facing = pose.facing;
   const [hx, hy] = SWORD_HOLD[facing];
   const [pivotX, pivotY] = SWORD_PIVOT;
   const lift = pose.aimed && facing === "up" ? -7 : 0;
@@ -315,6 +319,21 @@ function drawSlash(worldX, worldY, facing, frame) {
   }
 }
 
+function drawBarbarian() {
+  const attack = barbarian.attack;
+  const pose = attack.frame < 0
+    ? { facing: barbarian.facing, aimed: false, frame: -1 }
+    : { facing: attack.facing, aimed: attack.frame <= 3, frame: attack.frame };
+  const x = barbarian.x * CELL + barbarian.dx * barbarian.step;
+  const y = barbarian.y * CELL + barbarian.dy * barbarian.step;
+  const frame = barbarian.step > 0 ? barbarian.walk + 1 : 0;
+  const behind = pose.facing === "up";
+  if (behind) drawHeldSwordAt(x, y, pose);
+  drawCharacter(barbarian, barbarian.palette, x, y, frame);
+  if (pose.frame >= 0) drawSlash(attack.x, attack.y, attack.facing, pose.frame);
+  if (!behind) drawHeldSwordAt(x, y, pose);
+}
+
 export function render() {
   drawGround();
   drawBushes();
@@ -324,7 +343,9 @@ export function render() {
     if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
   }
   if (areaIndex === 0) {
-    for (const npc of NPCS) drawCharacter(npc, npc.palette);
+    for (const npc of NPCS) if (npc.dead) drawCharacter(npc, npc.palette);
+    for (const npc of NPCS) if (!npc.dead) drawCharacter(npc, npc.palette);
+    drawBarbarian();
   }
   const slideX = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
   const slideY = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;

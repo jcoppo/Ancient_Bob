@@ -1,7 +1,7 @@
-import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=12";
-import { player } from "./player.js?v=12";
-import { blockedCell } from "./collision.js?v=12";
-import { areaIndex } from "./world.js?v=12";
+import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=14";
+import { player } from "./player.js?v=14";
+import { blockedCell } from "./collision.js?v=14";
+import { areaIndex } from "./world.js?v=14";
 
 const STEP_DIRS = [
   [0, -1, "up"],
@@ -45,12 +45,13 @@ export function npcInFront() {
   const offset = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[player.facing];
   const x = player.x + offset[0];
   const y = player.y + offset[1];
-  return NPCS.find((npc) => npc.x === x && npc.y === y);
+  return NPCS.find((npc) => !npc.dead && npc.x === x && npc.y === y);
 }
 
 export function updateNpcs() {
   if (areaIndex !== 0) return;
   for (const npc of NPCS) {
+    if (npc.dead) continue;
     npc.wait -= 1;
     if (npc.wait > 0) continue;
 
