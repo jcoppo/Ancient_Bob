@@ -1,7 +1,7 @@
-import { npcInFront } from "./npcs.js?v=63";
-import { dialogueIsOpen, handleSpace } from "./dialogue.js?v=63";
-import { dropItem, heldItem, itemInReach, pickupItem, startScoop, startSow, startThrust } from "./items.js?v=63";
-import { backMenu, closeMenu, menuIsOpen, moveMenu, openMenu, selectMenu } from "./menu.js?v=63";
+import { npcInFront } from "./npcs.js?v=67";
+import { declineDialogue, dialogueIsOpen, handleSpace, moveDialogue } from "./dialogue.js?v=67";
+import { destroyYoungWheat, dropItem, harvestWheat, heldItem, itemInReach, pickupItem, startScoop, startSow, startThrust } from "./items.js?v=67";
+import { backMenu, closeMenu, menuIsOpen, moveMenu, openMenu, selectMenu } from "./menu.js?v=67";
 
 export let showGrid = false;
 
@@ -47,7 +47,12 @@ window.addEventListener("keydown", (event) => {
 
   if (KEY_DIRS[key]) {
     event.preventDefault();
-    if (!event.repeat && !dialogueIsOpen()) holdDirection(key);
+    if (dialogueIsOpen()) {
+      const dy = KEY_DIRS[key][1];
+      if (dy !== 0) moveDialogue(dy);
+      return;
+    }
+    if (!event.repeat) holdDirection(key);
     return;
   }
 
@@ -75,6 +80,8 @@ window.addEventListener("keydown", (event) => {
       handleSpace(npc);
       return;
     }
+    if (destroyYoungWheat()) return;
+    if (harvestWheat()) return;
     const held = heldItem();
     if (held?.kind === "sword") {
       startThrust();
@@ -101,7 +108,11 @@ window.addEventListener("keydown", (event) => {
       backMenu();
       return;
     }
-    if (!dialogueIsOpen()) dropItem();
+    if (dialogueIsOpen()) {
+      declineDialogue();
+      return;
+    }
+    dropItem();
     return;
   }
 

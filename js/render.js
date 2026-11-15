@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=63";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=63";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=63";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=63";
-import { player } from "./player.js?v=63";
-import { NPCS } from "./npcs.js?v=63";
-import { barbarian } from "./enemies.js?v=63";
-import { showGrid } from "./input.js?v=63";
+import { CELL, COLS, ROWS } from "./config.js?v=67";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=67";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=67";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=67";
+import { player } from "./player.js?v=67";
+import { NPCS } from "./npcs.js?v=67";
+import { barbarian } from "./enemies.js?v=67";
+import { showGrid } from "./input.js?v=67";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -433,6 +433,22 @@ function drawHeldBag(slideX, slideY, pose) {
   drawBag(slideX + hx, slideY + hy + Math.round(3 * pose.t));
 }
 
+const WHEAT_HOLD = {
+  up: [2, -10],
+  down: [6, -8],
+  left: [-10, -6],
+  right: [10, -6],
+};
+
+function drawWheatBundle(ox, oy) {
+  drawSprite(WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, ox, oy, false);
+}
+
+function drawHeldWheat(slideX, slideY, facing) {
+  const [hx, hy] = WHEAT_HOLD[facing];
+  drawWheatBundle(slideX + hx, slideY + hy);
+}
+
 function drawSeeds() {
   for (const seed of seeds) {
     const t = 1 - seed.life / seed.max;
@@ -541,6 +557,10 @@ export function render() {
     if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
     if (item.kind === "hoe") drawHoe(item.x * CELL, item.y * CELL + CELL - HOE_SPRITE.length);
     if (item.kind === "bag") drawBag(item.x * CELL, item.y * CELL + CELL - BAG_SPRITE.length);
+    if (item.kind === "wheat") {
+      const ox = item.x * CELL + Math.floor((CELL - WHEAT_BUNDLE[0].length) / 2);
+      drawWheatBundle(ox, (item.y + 1) * CELL - WHEAT_BUNDLE.length);
+    }
   }
   for (const npc of NPCS) {
     if ((npc.area ?? 0) !== areaIndex) continue;
@@ -561,9 +581,11 @@ export function render() {
   const hoeBehind = hoe?.facing === "up";
   const bag = held?.kind === "bag" ? bagPose() : null;
   const bagBehind = bag?.facing === "up";
+  const wheatBehind = held?.kind === "wheat" && player.facing === "up";
   if (pose && swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   if (hoe && hoeBehind) drawHeldHoe(slideX, slideY, hoe);
   if (bag && bagBehind) drawHeldBag(slideX, slideY, bag);
+  if (wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
   drawCharacter(player, PALETTE, slideX, slideY, player.step > 0 ? player.walk + 1 : 0);
   if (pose && pose.frame >= 0) drawSlash(pose.x, pose.y, pose.facing, pose.frame);
   for (const leaf of leaves) {
@@ -575,6 +597,7 @@ export function render() {
   if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   if (hoe && !hoeBehind) drawHeldHoe(slideX, slideY, hoe);
   if (bag && !bagBehind) drawHeldBag(slideX, slideY, bag);
+  if (held?.kind === "wheat" && !wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
   drawSeeds();
   drawWater();
   drawBushes();

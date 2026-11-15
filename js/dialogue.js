@@ -1,9 +1,11 @@
-import { player } from "./player.js?v=63";
-import { giveBread, loafCanvas } from "./items.js?v=63";
+import { player } from "./player.js?v=67";
+import { giveBread, heldItem, loafCanvas, takeHeldWheat } from "./items.js?v=67";
 
 const BAKER_INTRO = "Hi, I am the baker. Here is a loaf! If you want more, bring me some wheat.";
 const BAKER_AGAIN = "Bring me wheat, and I will bake you another loaf.";
+const BAKER_TRADE = "If you want, I will trade that wheat for a bread loaf.";
 const BREAD_NOTICE = "You received a bread loaf";
+const TRADE_CHOICES = ["Yes", "No"];
 const FARMER_INTRO = "Careful where you step. I just finished telling that clod of dirt it was doing a fine job, and it gets shy around strangers. I am the farmer. Hold the hoe, stand on grass, and press Z. The grass turns to soil. Hold the bag of wheat seeds, stand on that soil, and press Z. Down go the seeds, and the wheat starts to grow. Wait until the wheat is fully grown. Then harvest it. Pull it early and all you get is a green mistake.";
 const FARMER_AGAIN = "Hoe the grass, sow the soil, and harvest the wheat only when it is fully grown.";
 
@@ -23,6 +25,8 @@ let dialogueTimer = 0;
 let typeLast = 0;
 let noticeText = "";
 let noticeNpc = null;
+let tradeNpc = null;
+let choiceIndex = -1;
 
 export function dialogueIsOpen() {
   return dialogueOpen;
@@ -32,11 +36,25 @@ export function handleSpace(npc) {
   if (dialogueOpen) {
     if (dialogueTimer) finishDialogue();
     else if (dialogueIndex < dialogueFull.length) continueDialogue();
+    else if (choiceIndex >= 0) confirmChoice();
     else if (noticeText) showNotice();
     else closeDialogue();
     return;
   }
   if (npc) openDialogue(npc);
+}
+
+export function moveDialogue(dy) {
+  if (choiceIndex < 0) return;
+  choiceIndex = (choiceIndex + dy + TRADE_CHOICES.length) % TRADE_CHOICES.length;
+  renderChoices();
+}
+
+export function declineDialogue() {
+  if (choiceIndex < 0) return;
+  choiceIndex = -1;
+  tradeNpc = null;
+  closeDialogue();
 }
 
 function stopDialogueTimer() {
@@ -164,6 +182,46 @@ function showPageEnd() {
   const more = pageLimit < dialogueFull.length;
   showPage(pageShownEnd, more);
   dialogueIndex = more ? pageLimit : dialogueFull.length;
+  if (!more && tradeNpc) showChoices();
+}
+
+function renderChoices() {
+  dialogueLine.replaceChildren();
+  const ask = document.createElement("span");
+  ask.style.display = "block";
+  ask.textContent = dialogueFull;
+  dialogueLine.append(ask);
+  TRADE_CHOICES.forEach((label, option) => {
+    const row = document.createElement("span");
+    row.style.display = "block";
+    const mark = document.createElement("span");
+    mark.className = "dialogue-caret";
+    mark.textContent = option === choiceIndex ? "> " : "  ";
+    row.append(mark, document.createTextNode(label));
+    dialogueLine.append(row);
+  });
+}
+
+function showChoices() {
+  if (!tradeNpc || choiceIndex >= 0) return;
+  choiceIndex = 0;
+  dialogueLine.style.height = "auto";
+  renderChoices();
+}
+
+function confirmChoice() {
+  const yes = choiceIndex === 0;
+  const npc = tradeNpc;
+  choiceIndex = -1;
+  tradeNpc = null;
+  dialogueLine.style.height = "";
+  if (yes && takeHeldWheat()) {
+    noticeText = BREAD_NOTICE;
+    noticeNpc = npc;
+    showNotice();
+    return;
+  }
+  closeDialogue();
 }
 
 function typeDialogue(now) {
@@ -213,7 +271,13 @@ function openDialogue(npc) {
   dialogueWho.textContent = npc.name;
   noticeText = "";
   noticeNpc = null;
-  if (npc.name === "Baker" && !npc.met) {
+  tradeNpc = null;
+  choiceIndex = -1;
+  dialogueLine.style.height = "";
+  if (npc.name === "Baker" && heldItem()?.kind === "wheat") {
+    dialogueFull = BAKER_TRADE;
+    tradeNpc = npc;
+  } else if (npc.name === "Baker" && !npc.met) {
     dialogueFull = BAKER_INTRO;
     noticeText = BREAD_NOTICE;
     noticeNpc = npc;
@@ -260,6 +324,9 @@ function closeDialogue() {
   stopDialogueTimer();
   noticeText = "";
   noticeNpc = null;
+  tradeNpc = null;
+  choiceIndex = -1;
+  dialogueLine.style.height = "";
   dialogueWho.hidden = false;
   dialogue.hidden = true;
   dialogueOpen = false;

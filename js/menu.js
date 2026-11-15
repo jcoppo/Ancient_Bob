@@ -1,13 +1,13 @@
-import { COLS, ROWS } from "./config.js?v=63";
-import { healPlayer, player, resetPlayer } from "./player.js?v=63";
-import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=63";
-import { NPCS, resetNpcs } from "./npcs.js?v=63";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=63";
+import { COLS, ROWS } from "./config.js?v=67";
+import { healPlayer, player, resetPlayer } from "./player.js?v=67";
+import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=67";
+import { NPCS, resetNpcs } from "./npcs.js?v=67";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=67";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
 const CONFIRM = ["Yes", "No"];
-const ITEM_NAMES = { sword: "Sword", hoe: "Garden Hoe", bag: "Seed Bag", bread: "Bread loaf" };
+const ITEM_NAMES = { sword: "Sword", hoe: "Garden Hoe", bag: "Seed Bag", wheat: "Wheat bundle", bread: "Bread loaf" };
 const FACINGS = ["up", "down", "left", "right"];
 const CELL_PX = 6;
 const MAP_GAP = 12;
@@ -437,7 +437,16 @@ export function loadGame() {
   player.wrap = false;
 
   if (Array.isArray(data.items)) {
+    for (let i = items.length - 1; i >= 0; i--) {
+      if (items[i].kind === "wheat") items.splice(i, 1);
+    }
     for (const saved of data.items) {
+      if (saved?.kind === "wheat") {
+        if (!cellNumber(saved.x) || !cellNumber(saved.y)) continue;
+        if (!cellNumber(saved.area) || saved.area >= areaList().length) continue;
+        items.push({ kind: "wheat", area: saved.area, x: saved.x, y: saved.y, held: !!saved.held });
+        continue;
+      }
       const item = items.find((entry) => entry.kind === saved?.kind);
       if (!item || !cellNumber(saved.x) || !cellNumber(saved.y)) continue;
       if (!cellNumber(saved.area) || saved.area >= areaList().length) continue;

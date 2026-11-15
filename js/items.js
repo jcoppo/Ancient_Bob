@@ -1,7 +1,7 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=63";
-import { WHEAT_SPRITES } from "./pixels.js?v=63";
-import { player } from "./player.js?v=63";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=63";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=67";
+import { WHEAT_SPRITES } from "./pixels.js?v=67";
+import { player } from "./player.js?v=67";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=67";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
@@ -82,9 +82,19 @@ export function pickupItem(item) {
   player.holding = item.kind;
 }
 
+export function takeHeldWheat() {
+  const item = heldItem();
+  if (item?.kind !== "wheat") return false;
+  const index = items.indexOf(item);
+  if (index >= 0) items.splice(index, 1);
+  player.holding = null;
+  return true;
+}
+
 export function dropItem() {
   const item = heldItem();
   if (!item) return;
+  if (groundItems().some((other) => other.x === player.x && other.y === player.y)) return;
   item.held = false;
   item.area = areaIndex;
   item.x = player.x;
@@ -279,6 +289,30 @@ export function clearCrops() {
   crops.length = 0;
 }
 
+function wheatAt(x, y) {
+  return crops.findIndex((crop) => crop.area === areaIndex && crop.x === x && crop.y === y);
+}
+
+export function destroyYoungWheat() {
+  if (MAP[player.y]?.[player.x] !== "s") return false;
+  const index = wheatAt(player.x, player.y);
+  if (index < 0 || crops[index].stage >= WHEAT_SPRITES.length - 1) return false;
+  crops.splice(index, 1);
+  burstLeaves(player.x, player.y);
+  return true;
+}
+
+export function harvestWheat() {
+  if (heldItem()) return false;
+  if (MAP[player.y]?.[player.x] !== "s") return false;
+  const index = wheatAt(player.x, player.y);
+  if (index < 0 || crops[index].stage < WHEAT_SPRITES.length - 1) return false;
+  crops.splice(index, 1);
+  items.push({ kind: "wheat", area: areaIndex, x: player.x, y: player.y, held: true });
+  player.holding = "wheat";
+  return true;
+}
+
 export function startSow() {
   if (heldItem()?.kind !== "bag" || sow.frame >= 0) return;
   if (MAP[player.y]?.[player.x] !== "s") return;
@@ -323,6 +357,9 @@ const ITEM_START = items.map((item) => ({
 }));
 
 export function resetItems() {
+  for (let i = items.length - 1; i >= 0; i--) {
+    if (items[i].kind === "wheat") items.splice(i, 1);
+  }
   for (const start of ITEM_START) {
     const item = items.find((entry) => entry.kind === start.kind);
     item.area = start.area;
