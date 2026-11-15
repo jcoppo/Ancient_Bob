@@ -1,3 +1,4 @@
+import { CELL } from "./config.js";
 import { player } from "./player.js";
 import { areaIndex } from "./world.js";
 
@@ -30,4 +31,39 @@ export function dropItem() {
   item.x = player.x;
   item.y = player.y;
   player.holding = null;
+  thrust.frame = -1;
+}
+
+const SLASH_FRAMES = 6;
+
+export const thrust = {
+  frame: -1,
+  facing: "down",
+  x: 0,
+  y: 0,
+};
+
+export function startThrust() {
+  if (!heldItem()) return;
+  thrust.facing = player.facing;
+  thrust.x = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
+  thrust.y = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
+  thrust.frame = 0;
+}
+
+export function updateThrust() {
+  if (thrust.frame < 0) return;
+  thrust.frame += 1;
+  if (thrust.frame >= SLASH_FRAMES) thrust.frame = -1;
+}
+
+export function swordPose() {
+  if (thrust.frame < 0) return { facing: player.facing, aimed: false, frame: -1, x: 0, y: 0 };
+  return {
+    facing: thrust.facing,
+    aimed: thrust.frame <= 3,
+    frame: thrust.frame,
+    x: thrust.x,
+    y: thrust.y,
+  };
 }

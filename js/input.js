@@ -1,6 +1,6 @@
 import { npcInFront } from "./npcs.js";
 import { dialogueIsOpen, handleSpace } from "./dialogue.js";
-import { dropItem, itemInReach, pickupItem } from "./items.js";
+import { dropItem, heldItem, itemInReach, pickupItem, startThrust } from "./items.js";
 
 const status = document.getElementById("status");
 
@@ -51,6 +51,10 @@ window.addEventListener("keydown", (event) => {
     event.preventDefault();
     if (dialogueIsOpen()) {
       handleSpace();
+      return;
+    }
+    if (heldItem()) {
+      startThrust();
       return;
     }
     const item = itemInReach();

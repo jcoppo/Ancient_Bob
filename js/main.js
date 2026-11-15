@@ -5,6 +5,7 @@ import { blockedCell } from "./collision.js";
 import { dialogueIsOpen } from "./dialogue.js";
 import { areaIndex, crossingBlocked, enterArea } from "./world.js";
 import { heldDirection } from "./input.js";
+import { updateThrust } from "./items.js";
 import { render } from "./render.js";
 
 function tryStep(dx, dy) {
@@ -27,6 +28,7 @@ function tryStep(dx, dy) {
 
 function update() {
   if (!dialogueIsOpen()) updateNpcs();
+  updateThrust();
   updatePlayer(heldDirection(), tryStep);
 }
 
