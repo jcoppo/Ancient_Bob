@@ -1,7 +1,7 @@
-import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=61";
-import { player } from "./player.js?v=61";
-import { blockedCell } from "./collision.js?v=61";
-import { areaIndex } from "./world.js?v=61";
+import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=63";
+import { player } from "./player.js?v=63";
+import { blockedCell } from "./collision.js?v=63";
+import { areaIndex } from "./world.js?v=63";
 
 function hat(sprite, rows) {
   return rows.concat(sprite.slice(rows.length));
@@ -82,6 +82,7 @@ export const NPCS = [
     holding: "hoe",
     tool: "hoe",
     wait: 160,
+    met: false,
   },
 ];
 

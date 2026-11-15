@@ -1,8 +1,8 @@
-import { COLS, ROWS } from "./config.js?v=61";
-import { healPlayer, player, resetPlayer } from "./player.js?v=61";
-import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=61";
-import { NPCS, resetNpcs } from "./npcs.js?v=61";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=61";
+import { COLS, ROWS } from "./config.js?v=63";
+import { healPlayer, player, resetPlayer } from "./player.js?v=63";
+import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=63";
+import { NPCS, resetNpcs } from "./npcs.js?v=63";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=63";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
@@ -441,6 +441,7 @@ export function loadGame() {
       const item = items.find((entry) => entry.kind === saved?.kind);
       if (!item || !cellNumber(saved.x) || !cellNumber(saved.y)) continue;
       if (!cellNumber(saved.area) || saved.area >= areaList().length) continue;
+      if (item.kind === "hoe" && !saved.held && saved.area === 0 && saved.x === 7 && saved.y === 6) continue;
       item.area = saved.area;
       item.x = saved.x;
       item.y = saved.y;

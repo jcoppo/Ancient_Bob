@@ -1,11 +1,11 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=61";
-import { WHEAT_SPRITES } from "./pixels.js?v=61";
-import { player } from "./player.js?v=61";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=61";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=63";
+import { WHEAT_SPRITES } from "./pixels.js?v=63";
+import { player } from "./player.js?v=63";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=63";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
-  { kind: "hoe", area: 0, x: player.x, y: player.y - 1, held: false },
+  { kind: "hoe", area: 1, x: 2, y: 10, held: false },
   { kind: "bag", area: 1, x: 3, y: 10, held: false },
 ];
 

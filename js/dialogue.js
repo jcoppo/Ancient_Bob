@@ -1,9 +1,11 @@
-import { player } from "./player.js?v=61";
-import { giveBread, loafCanvas } from "./items.js?v=61";
+import { player } from "./player.js?v=63";
+import { giveBread, loafCanvas } from "./items.js?v=63";
 
 const BAKER_INTRO = "Hi, I am the baker. Here is a loaf! If you want more, bring me some wheat.";
 const BAKER_AGAIN = "Bring me wheat, and I will bake you another loaf.";
 const BREAD_NOTICE = "You received a bread loaf";
+const FARMER_INTRO = "Careful where you step. I just finished telling that clod of dirt it was doing a fine job, and it gets shy around strangers. I am the farmer. Hold the hoe, stand on grass, and press Z. The grass turns to soil. Hold the bag of wheat seeds, stand on that soil, and press Z. Down go the seeds, and the wheat starts to grow. Wait until the wheat is fully grown. Then harvest it. Pull it early and all you get is a green mistake.";
+const FARMER_AGAIN = "Hoe the grass, sow the soil, and harvest the wheat only when it is fully grown.";
 
 const TYPE_MS = 15;
 
@@ -203,7 +205,7 @@ function continueDialogue() {
 }
 
 function openDialogue(npc) {
-  if (npc.name !== "Baker" && !npc.line) return;
+  if (npc.name !== "Baker" && npc.name !== "Farmer" && !npc.line) return;
   const facePlayer = { up: "down", down: "up", left: "right", right: "left" };
   npc.facing = facePlayer[player.facing];
   stopDialogueTimer();
@@ -217,6 +219,11 @@ function openDialogue(npc) {
     noticeNpc = npc;
   } else if (npc.name === "Baker") {
     dialogueFull = BAKER_AGAIN;
+  } else if (npc.name === "Farmer" && !npc.met) {
+    dialogueFull = FARMER_INTRO;
+    npc.met = true;
+  } else if (npc.name === "Farmer") {
+    dialogueFull = FARMER_AGAIN;
   } else {
     dialogueFull = npc.line;
   }
