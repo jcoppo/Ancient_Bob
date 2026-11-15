@@ -1,4 +1,4 @@
-import { CELL } from "./config.js?v=14";
+import { CELL } from "./config.js?v=17";
 
 // w water, g grass, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -100,16 +100,20 @@ export function enterArea(index) {
   BUILDINGS = AREAS[index].buildings;
 }
 
+const BUSH_MARKS = "b1234";
+
 export function bushAt(x, y) {
-  return BUSHES[y][x] === "b";
+  return BUSH_MARKS.includes(BUSHES[y][x]);
 }
 
 export function cutBush(x, y) {
-  if (y < 0 || x < 0 || y >= BUSHES.length || x >= BUSHES[y].length) return false;
-  if (BUSHES[y][x] !== "b") return false;
+  if (y < 0 || x < 0 || y >= BUSHES.length || x >= BUSHES[y].length) return null;
+  const stage = BUSH_MARKS.indexOf(BUSHES[y][x]);
+  if (stage < 0) return null;
+  const next = stage === BUSH_MARKS.length - 1 ? "." : BUSH_MARKS[stage + 1];
   const row = BUSHES[y];
-  BUSHES[y] = row.slice(0, x) + "." + row.slice(x + 1);
-  return true;
+  BUSHES[y] = row.slice(0, x) + next + row.slice(x + 1);
+  return next === "." ? "break" : "hit";
 }
 
 export function buildingRoofPixels(building) {
@@ -139,7 +143,7 @@ function areaAt(index) {
 export function crossingBlocked(nextIndex, x, y, npcs) {
   const area = areaAt(nextIndex);
   if (!area) return true;
-  if (area.map[y][x] === "w" || area.bushes[y][x] === "b") return true;
+  if (area.map[y][x] === "w" || BUSH_MARKS.includes(area.bushes[y][x])) return true;
   if (hitsWall(area.buildings, x, y)) return true;
   if (nextIndex === 0 && npcs.some((npc) => npc.x === x && npc.y === y)) return true;
   return false;

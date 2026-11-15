@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=14";
-import { BUSH, CORPSE, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=14";
-import { groundItems, heldItem, leaves, swordPose } from "./items.js?v=14";
-import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=14";
-import { player } from "./player.js?v=14";
-import { NPCS } from "./npcs.js?v=14";
-import { barbarian } from "./enemies.js?v=14";
-import { showGrid } from "./input.js?v=14";
+import { CELL, COLS, ROWS } from "./config.js?v=17";
+import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=17";
+import { groundItems, heldItem, leaves, swordPose } from "./items.js?v=17";
+import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=17";
+import { player } from "./player.js?v=17";
+import { NPCS } from "./npcs.js?v=17";
+import { barbarian } from "./enemies.js?v=17";
+import { showGrid } from "./input.js?v=17";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -28,11 +28,12 @@ function drawTile(tile, gridX, gridY) {
 function drawBushes() {
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      if (BUSHES[y][x] !== "b") continue;
+      const pixels = BUSH_STAGES[BUSHES[y][x]];
+      if (!pixels) continue;
       const ox = x * CELL;
       const oy = y * CELL;
       for (let py = 0; py < CELL; py++) {
-        const row = BUSH.pixels[py];
+        const row = pixels[py];
         for (let px = 0; px < CELL; px++) {
           const color = BUSH[row[px]];
           if (!color) continue;
@@ -320,6 +321,7 @@ function drawSlash(worldX, worldY, facing, frame) {
 }
 
 function drawBarbarian() {
+  if (!barbarian.entered) return;
   const attack = barbarian.attack;
   const pose = attack.frame < 0
     ? { facing: barbarian.facing, aimed: false, frame: -1 }

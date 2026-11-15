@@ -1,17 +1,19 @@
-import { CELL } from "./config.js?v=14";
-import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=14";
-import { player } from "./player.js?v=14";
-import { NPCS } from "./npcs.js?v=14";
-import { blockedCell } from "./collision.js?v=14";
-import { areaIndex } from "./world.js?v=14";
+import { CELL, COLS, FPS } from "./config.js?v=17";
+import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=17";
+import { player } from "./player.js?v=17";
+import { NPCS } from "./npcs.js?v=17";
+import { blockedCell } from "./collision.js?v=17";
+import { areaIndex } from "./world.js?v=17";
 
 const SLIDE = 2;
 const SLASH_FRAMES = 6;
 
+const ARRIVE_FRAMES = FPS * 30;
+
 export const barbarian = {
-  x: 18,
+  x: COLS,
   y: 1,
-  facing: "down",
+  facing: "left",
   palette: BARBARIAN_PALETTE,
   sprites: HOOD_SPRITES,
   walkSprites: HOOD_WALK,
@@ -20,7 +22,9 @@ export const barbarian = {
   dy: 0,
   step: 0,
   walk: 0,
-  attack: { frame: -1, facing: "down", x: 0, y: 0 },
+  arrive: ARRIVE_FRAMES,
+  entered: false,
+  attack: { frame: -1, facing: "left", x: 0, y: 0 },
 };
 
 function nearestTarget() {
@@ -69,6 +73,22 @@ function strike() {
   if (npc) npc.dead = true;
 }
 
+function beginEntrance() {
+  const crowd = NPCS.concat(barbarian);
+  for (const y of [1, 0, 2]) {
+    if (blockedCell(COLS - 1, y, player, crowd, barbarian)) continue;
+    barbarian.x = COLS;
+    barbarian.y = y;
+    barbarian.facing = "left";
+    barbarian.dx = -1;
+    barbarian.dy = 0;
+    barbarian.step = SLIDE;
+    barbarian.walk = 1;
+    return true;
+  }
+  return false;
+}
+
 function beginSlash(facing) {
   barbarian.facing = facing;
   barbarian.walk = 0;
@@ -79,6 +99,15 @@ function beginSlash(facing) {
 }
 
 export function updateBarbarian() {
+  if (!barbarian.entered) {
+    if (barbarian.arrive > 0) {
+      barbarian.arrive -= 1;
+      return;
+    }
+    if (areaIndex !== 0 || !beginEntrance()) return;
+    barbarian.entered = true;
+    return;
+  }
   if (areaIndex !== 0) return;
   const attack = barbarian.attack;
   if (attack.frame >= 0) {

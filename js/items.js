@@ -1,6 +1,6 @@
-import { CELL } from "./config.js?v=14";
-import { player } from "./player.js?v=14";
-import { areaIndex, cutBush } from "./world.js?v=14";
+import { CELL } from "./config.js?v=17";
+import { player } from "./player.js?v=17";
+import { areaIndex, cutBush } from "./world.js?v=17";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y-1, held: false },
@@ -106,7 +106,7 @@ export function startThrust() {
   const offset = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[player.facing];
   const bushX = player.x + offset[0];
   const bushY = player.y + offset[1];
-  if (cutBush(bushX, bushY)) burstLeaves(bushX, bushY);
+  if (cutBush(bushX, bushY) === "break") burstLeaves(bushX, bushY);
 }
 
 export function updateThrust() {

@@ -1,13 +1,13 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js?v=14";
-import { NPCS, updateNpcs } from "./npcs.js?v=14";
-import { updateBarbarian } from "./enemies.js?v=14";
-import { player, updatePlayer } from "./player.js?v=14";
-import { blockedCell } from "./collision.js?v=14";
-import { dialogueIsOpen } from "./dialogue.js?v=14";
-import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=14";
-import { heldDirection } from "./input.js?v=14";
-import { updateLeaves, updateThrust } from "./items.js?v=14";
-import { render } from "./render.js?v=14";
+import { COLS, FRAME_MS, ROWS } from "./config.js?v=17";
+import { NPCS, updateNpcs } from "./npcs.js?v=17";
+import { updateBarbarian } from "./enemies.js?v=17";
+import { player, updatePlayer } from "./player.js?v=17";
+import { blockedCell } from "./collision.js?v=17";
+import { dialogueIsOpen } from "./dialogue.js?v=17";
+import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=17";
+import { heldDirection } from "./input.js?v=17";
+import { updateLeaves, updateThrust } from "./items.js?v=17";
+import { render } from "./render.js?v=17";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;

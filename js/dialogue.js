@@ -1,4 +1,4 @@
-import { player } from "./player.js?v=14";
+import { player } from "./player.js?v=17";
 
 const TYPE_MS = 15;
 
