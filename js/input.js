@@ -51,16 +51,17 @@ window.addEventListener("keydown", (event) => {
       handleSpace();
       return;
     }
+    const npc = npcInFront();
+    if (npc) {
+      handleSpace(npc);
+      return;
+    }
     if (heldItem()) {
       startThrust();
       return;
     }
     const item = itemInReach();
-    if (item) {
-      pickupItem(item);
-      return;
-    }
-    handleSpace(npcInFront());
+    if (item) pickupItem(item);
     return;
   }
 

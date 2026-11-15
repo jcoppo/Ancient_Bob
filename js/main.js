@@ -4,9 +4,9 @@ import { player, updatePlayer } from "./player.js";
 import { blockedCell } from "./collision.js";
 import { dialogueIsOpen } from "./dialogue.js";
 import { areaIndex, crossingBlocked, enterArea } from "./world.js";
-import { heldDirection } from "./input.js?v=4";
+import { heldDirection } from "./input.js?v=5";
 import { updateThrust } from "./items.js";
-import { render } from "./render.js?v=4";
+import { render } from "./render.js?v=5";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;

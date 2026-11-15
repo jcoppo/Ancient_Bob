@@ -4,7 +4,7 @@ import { groundItems, heldItem, swordPose } from "./items.js";
 import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js";
 import { player } from "./player.js";
 import { NPCS } from "./npcs.js";
-import { showGrid } from "./input.js?v=4";
+import { showGrid } from "./input.js?v=5";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
