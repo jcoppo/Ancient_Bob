@@ -3,7 +3,7 @@ import { player } from "./player.js?v=12";
 import { areaIndex, cutBush } from "./world.js?v=12";
 
 export const items = [
-  { kind: "sword", area: 0, x: player.x + 3, y: player.y, held: false },
+  { kind: "sword", area: 0, x: player.x + 2, y: player.y-1, held: false },
 ];
 
 export function groundItems() {

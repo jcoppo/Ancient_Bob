@@ -4,7 +4,7 @@ const SLIDE = 2;
 
 export const player = {
   x: 7,
-  y: 9,
+  y: 7,
   facing: "down",
   dx: 0,
   dy: 0,
