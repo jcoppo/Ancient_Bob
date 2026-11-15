@@ -1,6 +1,6 @@
 import { player } from "./player.js?v=7";
 
-const TYPE_MS = 6;
+const TYPE_MS = 15;
 
 const dialogue = document.getElementById("dialogue");
 const dialogueWho = document.getElementById("dialogue-who");
