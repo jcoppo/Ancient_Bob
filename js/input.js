@@ -1,6 +1,6 @@
-import { npcInFront } from "./npcs.js?v=17";
-import { dialogueIsOpen, handleSpace } from "./dialogue.js?v=17";
-import { dropItem, heldItem, itemInReach, pickupItem, startThrust } from "./items.js?v=17";
+import { npcInFront } from "./npcs.js?v=22";
+import { dialogueIsOpen, handleSpace } from "./dialogue.js?v=22";
+import { dropItem, heldItem, itemInReach, pickupItem, startThrust } from "./items.js?v=22";
 
 export let showGrid = false;
 

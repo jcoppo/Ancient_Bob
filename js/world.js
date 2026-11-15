@@ -1,4 +1,5 @@
-import { CELL } from "./config.js?v=17";
+import { CELL } from "./config.js?v=22";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=22";
 
 // w water, g grass, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -83,27 +84,77 @@ const MEADOW_BUSHES = [
   "bbbbbbbbbbbbbbbbbbbb",
 ];
 
+// Anchor cell is the foot of the trunk. Leaves hang past it and do not block.
+const VILLAGE_TREES = [
+  { kind: "oak", x: 17, y: 4 },
+];
+
+const MEADOW_TREES = [
+  { kind: "oak", x: 16, y: 5 },
+  { kind: "pine", x: 5, y: 8 },
+  { kind: "round", x: 14, y: 13 },
+];
+
 const AREAS = [
-  { map: VILLAGE_MAP, bushes: VILLAGE_BUSHES, buildings: VILLAGE_BUILDINGS },
-  { map: MEADOW_MAP, bushes: MEADOW_BUSHES, buildings: [] },
+  { map: VILLAGE_MAP, bushes: VILLAGE_BUSHES, buildings: VILLAGE_BUILDINGS, trees: VILLAGE_TREES },
+  { map: MEADOW_MAP, bushes: MEADOW_BUSHES, buildings: [], trees: MEADOW_TREES },
 ];
 
 export let areaIndex = 0;
 export let MAP = AREAS[0].map;
 export let BUSHES = AREAS[0].bushes;
 export let BUILDINGS = AREAS[0].buildings;
+export let TREES = AREAS[0].trees;
 
 export function enterArea(index) {
   areaIndex = index;
   MAP = AREAS[index].map;
   BUSHES = AREAS[index].bushes;
   BUILDINGS = AREAS[index].buildings;
+  TREES = AREAS[index].trees;
 }
 
 const BUSH_MARKS = "b1234";
 
 export function bushAt(x, y) {
   return BUSH_MARKS.includes(BUSHES[y][x]);
+}
+
+const TRUNK_BOX = {};
+for (const [kind, sprite] of Object.entries(TREE_SPRITES)) {
+  let minX = sprite[0].length;
+  let minY = sprite.length;
+  let maxX = 0;
+  let maxY = 0;
+  sprite.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] !== "t" && row[x] !== "k") continue;
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  });
+  TRUNK_BOX[kind] = { minX, minY, maxX, maxY, cols: sprite[0].length, rows: sprite.length };
+}
+
+function trunkHits(tree, x, y) {
+  const box = TRUNK_BOX[tree.kind];
+  const width = box.cols * TREE_SCALE;
+  const height = box.rows * TREE_SCALE;
+  const ox = tree.x * CELL + Math.floor((CELL - width) / 2);
+  const oy = (tree.y + 1) * CELL - height;
+  const left = ox + box.minX * TREE_SCALE;
+  const top = oy + box.minY * TREE_SCALE;
+  const right = ox + (box.maxX + 1) * TREE_SCALE;
+  const bottom = oy + (box.maxY + 1) * TREE_SCALE;
+  const cellLeft = x * CELL;
+  const cellTop = y * CELL;
+  return left < cellLeft + CELL && right > cellLeft && top < cellTop + CELL && bottom > cellTop;
+}
+
+export function treeAt(x, y) {
+  return TREES.some((tree) => trunkHits(tree, x, y));
 }
 
 export function cutBush(x, y) {
@@ -144,6 +195,7 @@ export function crossingBlocked(nextIndex, x, y, npcs) {
   const area = areaAt(nextIndex);
   if (!area) return true;
   if (area.map[y][x] === "w" || BUSH_MARKS.includes(area.bushes[y][x])) return true;
+  if (area.trees.some((tree) => trunkHits(tree, x, y))) return true;
   if (hitsWall(area.buildings, x, y)) return true;
   if (nextIndex === 0 && npcs.some((npc) => npc.x === x && npc.y === y)) return true;
   return false;

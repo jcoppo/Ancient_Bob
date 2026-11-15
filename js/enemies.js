@@ -1,10 +1,11 @@
-import { CELL, COLS, FPS } from "./config.js?v=17";
-import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=17";
-import { player } from "./player.js?v=17";
-import { NPCS } from "./npcs.js?v=17";
-import { blockedCell } from "./collision.js?v=17";
-import { areaIndex } from "./world.js?v=17";
+import { CELL, COLS, FPS } from "./config.js?v=22";
+import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js?v=22";
+import { player } from "./player.js?v=22";
+import { NPCS } from "./npcs.js?v=22";
+import { blockedCell } from "./collision.js?v=22";
+import { areaIndex } from "./world.js?v=22";
 
+const BARBARIAN_ACTIVE = false;
 const SLIDE = 2;
 const SLASH_FRAMES = 6;
 
@@ -99,6 +100,7 @@ function beginSlash(facing) {
 }
 
 export function updateBarbarian() {
+  if (!BARBARIAN_ACTIVE) return;
   if (!barbarian.entered) {
     if (barbarian.arrive > 0) {
       barbarian.arrive -= 1;

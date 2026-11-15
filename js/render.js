@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=17";
-import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=17";
-import { groundItems, heldItem, leaves, swordPose } from "./items.js?v=17";
-import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=17";
-import { player } from "./player.js?v=17";
-import { NPCS } from "./npcs.js?v=17";
-import { barbarian } from "./enemies.js?v=17";
-import { showGrid } from "./input.js?v=17";
+import { CELL, COLS, ROWS } from "./config.js?v=22";
+import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=22";
+import { groundItems, heldItem, leaves, swordPose } from "./items.js?v=22";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=22";
+import { player } from "./player.js?v=22";
+import { NPCS } from "./npcs.js?v=22";
+import { barbarian } from "./enemies.js?v=22";
+import { showGrid } from "./input.js?v=22";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -21,6 +21,29 @@ function drawTile(tile, gridX, gridY) {
     for (let x = 0; x < CELL; x++) {
       ctx.fillStyle = tile[row[x]];
       ctx.fillRect(ox + x, oy + y, 1, 1);
+    }
+  }
+}
+
+function drawTrees(part) {
+  const leaves = part === "leaf";
+  for (const tree of TREES) {
+    const sprite = TREE_SPRITES[tree.kind];
+    const scale = TREE_SCALE;
+    const width = sprite[0].length * scale;
+    const height = sprite.length * scale;
+    const ox = tree.x * CELL + Math.floor((CELL - width) / 2);
+    const oy = (tree.y + 1) * CELL - height;
+    for (let y = 0; y < sprite.length; y++) {
+      const row = sprite[y];
+      for (let x = 0; x < row.length; x++) {
+        const ch = row[x];
+        if (ch === ".") continue;
+        const trunk = ch === "t" || ch === "k";
+        if (trunk === leaves) continue;
+        ctx.fillStyle = TREE_PALETTE[ch];
+        ctx.fillRect(ox + x * scale, oy + y * scale, scale, scale);
+      }
     }
   }
 }
@@ -127,6 +150,14 @@ function drawGround() {
     for (let x = 0; x < COLS; x++) {
       const ground = MAP[y][x] === "w" ? WATER_TILE : MAP[y][x] === "p" ? PATH_TILE : GRASS_TILE;
       drawTile(ground, x, y);
+    }
+  }
+}
+
+function drawWater() {
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (MAP[y][x] === "w") drawTile(WATER_TILE, x, y);
     }
   }
 }
@@ -338,8 +369,6 @@ function drawBarbarian() {
 
 export function render() {
   drawGround();
-  drawBushes();
-  drawBuildings("wall");
   if (showGrid) drawGrid();
   for (const item of groundItems()) {
     if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
@@ -364,5 +393,10 @@ export function render() {
   }
   ctx.globalAlpha = 1;
   if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
+  drawWater();
+  drawBushes();
+  drawBuildings("wall");
+  drawTrees("trunk");
   drawBuildings("roof");
+  drawTrees("leaf");
 }
