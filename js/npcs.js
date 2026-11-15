@@ -1,7 +1,7 @@
-import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=33";
-import { player } from "./player.js?v=33";
-import { blockedCell } from "./collision.js?v=33";
-import { areaIndex } from "./world.js?v=33";
+import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=36";
+import { player } from "./player.js?v=36";
+import { blockedCell } from "./collision.js?v=36";
+import { areaIndex } from "./world.js?v=36";
 
 const STEP_DIRS = [
   [0, -1, "up"],

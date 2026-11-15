@@ -1,4 +1,5 @@
-import { CELL } from "./config.js?v=33";
+import { CELL } from "./config.js?v=36";
+import { FARM_SPRITES, FARM_WALK } from "./pixels.js?v=36";
 
 const SLIDE = 2;
 
@@ -13,6 +14,8 @@ export const player = {
   wrap: false,
   hp: 5,
   maxHp: 5,
+  sprites: FARM_SPRITES,
+  walkSprites: FARM_WALK,
 };
 
 export function hurtPlayer(amount) {

@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=33";
-import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=33";
-import { groundItems, heldItem, hoePose, leaves, swordPose } from "./items.js?v=33";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=33";
-import { player } from "./player.js?v=33";
-import { NPCS } from "./npcs.js?v=33";
-import { barbarian } from "./enemies.js?v=33";
-import { showGrid } from "./input.js?v=33";
+import { CELL, COLS, ROWS } from "./config.js?v=36";
+import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=36";
+import { groundItems, heldItem, hoePose, leaves, swordPose } from "./items.js?v=36";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=36";
+import { player } from "./player.js?v=36";
+import { NPCS } from "./npcs.js?v=36";
+import { barbarian } from "./enemies.js?v=36";
+import { showGrid } from "./input.js?v=36";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;

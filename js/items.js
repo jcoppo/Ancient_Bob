@@ -1,6 +1,6 @@
-import { CELL } from "./config.js?v=33";
-import { player } from "./player.js?v=33";
-import { areaIndex, cutBush, tillGrass } from "./world.js?v=33";
+import { CELL } from "./config.js?v=36";
+import { player } from "./player.js?v=36";
+import { areaIndex, cutBush, tillGrass } from "./world.js?v=36";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
