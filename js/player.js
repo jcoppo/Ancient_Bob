@@ -1,4 +1,4 @@
-import { CELL } from "./config.js?v=6";
+import { CELL } from "./config.js?v=7";
 
 const SLIDE = 2;
 

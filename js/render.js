@@ -1,10 +1,10 @@
-import { CELL, COLS, ROWS } from "./config.js?v=6";
-import { BUSH, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=6";
-import { groundItems, heldItem, swordPose } from "./items.js?v=6";
-import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=6";
-import { player } from "./player.js?v=6";
-import { NPCS } from "./npcs.js?v=6";
-import { showGrid } from "./input.js?v=6";
+import { CELL, COLS, ROWS } from "./config.js?v=7";
+import { BUSH, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=7";
+import { groundItems, heldItem, swordPose } from "./items.js?v=7";
+import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js?v=7";
+import { player } from "./player.js?v=7";
+import { NPCS } from "./npcs.js?v=7";
+import { showGrid } from "./input.js?v=7";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;

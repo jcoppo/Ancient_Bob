@@ -1,4 +1,4 @@
-import { CELL } from "./config.js?v=6";
+import { CELL } from "./config.js?v=7";
 
 // w water, g grass, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -9,15 +9,15 @@ const VILLAGE_MAP = [
   "wwgggggggggggggggggg",
   "wggggggggggggggggggg",
   "wggggggggggggggggggg",
-  "ggppppppppppppgggggg",
-  "ggggggggpggggggggggg",
-  "ggggggggpggggggggggg",
-  "ggggggggpggggggggggg",
-  "ggggggggpggggggggggg",
-  "ggggggggpggggggggggg",
-  "ggggggggpggggggggggg",
-  "gggggppppggggggggggg",
-  "ppppppppppppppppppgg",
+  "ggggppppppppppgggggg",
+  "ggggggggggpggggggggg",
+  "ggggggggggpggggggggg",
+  "ggggggggggpggggggggg",
+  "ggggggggggpggggggggg",
+  "ggggggggggpggggggggg",
+  "ggggggggggpggggggggg",
+  "gggggggppppggggggggg",
+  "ggppppppppppppppppgg",
   "gggggggggggggggggggg",
   "gggggggggggggggggggg",
   "gggggggggggggggggggg",
@@ -26,11 +26,11 @@ const VILLAGE_MAP = [
 
 // Placed once on open grass. Same spots every time the game loads.
 const VILLAGE_BUILDINGS = [
-  { x: 5, y: 11, w: 3, h: 3 },
+  { x: 7, y: 11, w: 3, h: 3 },
   { x: 14, y: 12, w: 4, h: 3 },
-  { x: 0, y: 11, w: 3, h: 4 },
+  { x: 2, y: 11, w: 3, h: 4 },
   { x: 10, y: 3, w: 4, h: 4 },
-  { x: 2, y: 4, w: 3, h: 3 },
+  { x: 4, y: 4, w: 3, h: 3 },
 ];
 
 // Fixed bushes. b is a bush on grass. Same layout every load.
@@ -41,15 +41,15 @@ const VILLAGE_BUSHES = [
   "...b....b.....b.....",
   "....................",
   ".........b..........",
-  ".....b..............",
+  "...b................",
   "bb..................",
   "................b...",
   "....................",
   "bb...b...........b..",
-  "..........b....bb...",
+  "......b........bb...",
   ".............b......",
-  "...b..............b.",
-  "....b....b..b.......",
+  ".....b............b.",
+  ".b.........bb.......",
   "....................",
   "..b.....b........bbb",
   "....................",
