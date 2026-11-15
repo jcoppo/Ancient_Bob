@@ -1,7 +1,7 @@
-import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=40";
-import { player } from "./player.js?v=40";
-import { blockedCell } from "./collision.js?v=40";
-import { areaIndex } from "./world.js?v=40";
+import { BAKER_PALETTE, BAKER_SPRITES, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=54";
+import { player } from "./player.js?v=54";
+import { blockedCell } from "./collision.js?v=54";
+import { areaIndex } from "./world.js?v=54";
 
 const STEP_DIRS = [
   [0, -1, "up"],
@@ -13,8 +13,8 @@ const STEP_DIRS = [
 export const NPCS = [
   {
     name: "Bram",
-    x: 15,
-    y: 6,
+    x: 14,
+    y: 16,
     facing: "down",
     palette: MAN_PALETTE,
     wait: 80,
@@ -38,6 +38,18 @@ export const NPCS = [
     wait: 200,
     line: "The stones under the square have started to hum. I have not heard that since the old gate was sealed. The town is remembering something it was meant to forget.",
   },
+  {
+    name: "Baker",
+    x: 16,
+    y: 8,
+    homeX: 16,
+    homeY: 8,
+    facing: "down",
+    palette: BAKER_PALETTE,
+    sprites: BAKER_SPRITES,
+    wait: 160,
+    met: false,
+  },
 ];
 
 const NPC_START = NPCS.map((npc) => ({
@@ -56,6 +68,7 @@ export function resetNpcs() {
     npc.facing = start.facing;
     npc.wait = start.wait;
     npc.dead = false;
+    npc.met = false;
   }
 }
 
@@ -67,10 +80,28 @@ export function npcInFront() {
   return NPCS.find((npc) => !npc.dead && npc.x === x && npc.y === y);
 }
 
+function updateBaker(npc) {
+  npc.wait -= 1;
+  if (npc.wait > 0) return;
+  const dirs = [-1, 1].filter((dx) => {
+    const nx = npc.x + dx;
+    return Math.abs(nx - npc.homeX) <= 1 && npc.y === npc.homeY && !blockedCell(nx, npc.y, player, NPCS, npc);
+  });
+  npc.wait = 180 + Math.floor(Math.random() * 220);
+  if (dirs.length === 0) return;
+  const dx = dirs[Math.floor(Math.random() * dirs.length)];
+  npc.x += dx;
+  npc.facing = npc.x === npc.homeX ? "down" : (dx < 0 ? "left" : "right");
+}
+
 export function updateNpcs() {
   if (areaIndex !== 0) return;
   for (const npc of NPCS) {
     if (npc.dead) continue;
+    if (npc.homeX !== undefined) {
+      updateBaker(npc);
+      continue;
+    }
     npc.wait -= 1;
     if (npc.wait > 0) continue;
 

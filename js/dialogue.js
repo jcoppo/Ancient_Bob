@@ -1,4 +1,9 @@
-import { player } from "./player.js?v=40";
+import { player } from "./player.js?v=54";
+import { giveBread, loafCanvas } from "./items.js?v=54";
+
+const BAKER_INTRO = "Hi, I am the baker. Here is a loaf! If you want more, bring me some wheat.";
+const BAKER_AGAIN = "Bring me wheat, and I will bake you another loaf.";
+const BREAD_NOTICE = "You received a bread loaf";
 
 const TYPE_MS = 15;
 
@@ -14,6 +19,8 @@ let pageShownEnd = 0;
 let pageLimit = 0;
 let dialogueTimer = 0;
 let typeLast = 0;
+let noticeText = "";
+let noticeNpc = null;
 
 export function dialogueIsOpen() {
   return dialogueOpen;
@@ -23,6 +30,7 @@ export function handleSpace(npc) {
   if (dialogueOpen) {
     if (dialogueTimer) finishDialogue();
     else if (dialogueIndex < dialogueFull.length) continueDialogue();
+    else if (noticeText) showNotice();
     else closeDialogue();
     return;
   }
@@ -198,8 +206,19 @@ function openDialogue(npc) {
   const facePlayer = { up: "down", down: "up", left: "right", right: "left" };
   npc.facing = facePlayer[player.facing];
   stopDialogueTimer();
+  dialogueWho.hidden = false;
   dialogueWho.textContent = npc.name;
-  dialogueFull = npc.line;
+  noticeText = "";
+  noticeNpc = null;
+  if (npc.name === "Baker" && !npc.met) {
+    dialogueFull = BAKER_INTRO;
+    noticeText = BREAD_NOTICE;
+    noticeNpc = npc;
+  } else if (npc.name === "Baker") {
+    dialogueFull = BAKER_AGAIN;
+  } else {
+    dialogueFull = npc.line;
+  }
   dialoguePageStart = 0;
   dialogueIndex = 0;
   dialogueLine.textContent = "";
@@ -209,8 +228,31 @@ function openDialogue(npc) {
   startTyping();
 }
 
+function showNotice() {
+  const npc = noticeNpc;
+  noticeNpc = null;
+  dialogueFull = noticeText;
+  noticeText = "";
+  if (npc) {
+    npc.met = true;
+    giveBread();
+  }
+  stopDialogueTimer();
+  dialogueWho.hidden = true;
+  dialogueWho.textContent = "";
+  dialoguePageStart = 0;
+  dialogueIndex = dialogueFull.length;
+  pageShownEnd = dialogueFull.length;
+  pageLimit = dialogueFull.length;
+  showPage(dialogueFull.length, false);
+  dialogueLine.prepend(loafCanvas());
+}
+
 function closeDialogue() {
   stopDialogueTimer();
+  noticeText = "";
+  noticeNpc = null;
+  dialogueWho.hidden = false;
   dialogue.hidden = true;
   dialogueOpen = false;
 }

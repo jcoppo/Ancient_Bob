@@ -1,11 +1,67 @@
-import { CELL } from "./config.js?v=40";
-import { player } from "./player.js?v=40";
-import { areaIndex, cutBush, tillGrass } from "./world.js?v=40";
+import { CELL } from "./config.js?v=54";
+import { player } from "./player.js?v=54";
+import { areaIndex, cutBush, tillGrass } from "./world.js?v=54";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
   { kind: "hoe", area: 0, x: player.x, y: player.y - 1, held: false },
 ];
+
+export const stores = { bread: 0, gold: 5 };
+
+export function giveBread() {
+  stores.bread += 1;
+}
+
+export function takeBread() {
+  if (stores.bread <= 0) return false;
+  stores.bread -= 1;
+  return true;
+}
+
+const LOAF = [
+  "..cccccc..",
+  ".cddddddc.",
+  "cdddbbdddc",
+  "cddddddddc",
+  ".cccccccc.",
+];
+const LOAF_COLORS = { c: "#c4924a", d: "#f0d7a0", b: "#a56a38" };
+
+export function loafCanvas() {
+  return iconCanvas(LOAF, LOAF_COLORS, "menu-loaf");
+}
+
+const COIN = [
+  "..hhhhhh..",
+  ".hGGGGGGh.",
+  "..ssssss..",
+  ".hGGGGGGh.",
+  "..ssssss..",
+  ".hGGGGGGh.",
+  ".ssssssss.",
+];
+const COIN_COLORS = { h: "#ffe9a0", G: "#e6c15a", s: "#a67c2e" };
+
+export function coinCanvas() {
+  return iconCanvas(COIN, COIN_COLORS, "menu-coin");
+}
+
+function iconCanvas(rows, colors, className) {
+  const canvas = document.createElement("canvas");
+  canvas.className = className;
+  canvas.width = rows[0].length;
+  canvas.height = rows.length;
+  const ctx = canvas.getContext("2d");
+  rows.forEach((row, y) => {
+    [...row].forEach((pixel, x) => {
+      if (!colors[pixel]) return;
+      ctx.fillStyle = colors[pixel];
+      ctx.fillRect(x, y, 1, 1);
+    });
+  });
+  return canvas;
+}
 
 export function groundItems() {
   return items.filter((item) => !item.held && item.area === areaIndex);
@@ -173,4 +229,6 @@ export function resetItems() {
   thrust.frame = -1;
   scoop.frame = -1;
   leaves.length = 0;
+  stores.bread = 0;
+  stores.gold = 5;
 }

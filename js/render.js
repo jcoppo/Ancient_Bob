@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=40";
-import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=40";
-import { groundItems, heldItem, hoePose, leaves, swordPose } from "./items.js?v=40";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=40";
-import { player } from "./player.js?v=40";
-import { NPCS } from "./npcs.js?v=40";
-import { barbarian } from "./enemies.js?v=40";
-import { showGrid } from "./input.js?v=40";
+import { CELL, COLS, ROWS } from "./config.js?v=54";
+import { BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js?v=54";
+import { groundItems, heldItem, hoePose, leaves, swordPose } from "./items.js?v=54";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=54";
+import { player } from "./player.js?v=54";
+import { NPCS } from "./npcs.js?v=54";
+import { barbarian } from "./enemies.js?v=54";
+import { showGrid } from "./input.js?v=54";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -75,6 +75,116 @@ const ROOF = "#a64b38";
 const TILE = "#8a3c2c";
 const DOOR = "#6b4630";
 const OPENING = "#241c16";
+const BRICK = "#c45c3c";
+const MORTAR = "#6e4538";
+const CHIMNEY_X = 4;
+const CHIMNEY_W = 8;
+const CHIMNEY_RISE = 12;
+
+function drawRoof(building) {
+  const left = building.x * CELL;
+  const top = building.y * CELL;
+  const width = building.w * CELL;
+  const roofHeight = buildingRoofPixels(building);
+  for (let row = 0; row < roofHeight; row++) {
+    const inset = Math.floor(((roofHeight - row) * (width / 2 - 2)) / roofHeight);
+    const x = left + inset;
+    const w = width - inset * 2;
+    ctx.fillStyle = row % 3 === 2 ? TILE : ROOF;
+    ctx.fillRect(x, top + row, w, 1);
+    ctx.fillStyle = TIMBER;
+    ctx.fillRect(x, top + row, 1, 1);
+    ctx.fillRect(x + w - 1, top + row, 1, 1);
+  }
+}
+
+function drawBricks(x, y, w, h) {
+  for (let row = 0; row < h; row++) {
+    const course = Math.floor(row / 3);
+    for (let col = 0; col < w; col++) {
+      const seam = row % 3 === 2 || (col + (course % 2) * 2) % 4 === 0;
+      ctx.fillStyle = seam ? MORTAR : BRICK;
+      ctx.fillRect(x + col, y + row, 1, 1);
+    }
+  }
+}
+
+function drawBaker(building, part) {
+  const left = building.x * CELL;
+  const top = building.y * CELL;
+  const width = building.w * CELL;
+  const height = building.h * CELL;
+  const roofHeight = buildingRoofPixels(building);
+  const wallTop = top + roofHeight;
+  const wallH = height - roofHeight;
+  const chimneyX = left + CHIMNEY_X;
+
+  if (part === "roof") {
+    drawRoof(building);
+    drawBricks(chimneyX, top - CHIMNEY_RISE, CHIMNEY_W, height + CHIMNEY_RISE);
+    return;
+  }
+
+  ctx.fillStyle = STONE;
+  ctx.fillRect(left + 2, wallTop, width - 4, wallH);
+  ctx.fillStyle = STONE_BASE;
+  ctx.fillRect(left + 2, top + height - 3, width - 4, 3);
+
+  ctx.fillStyle = TIMBER;
+  ctx.fillRect(left + 1, wallTop, width - 2, 2);
+  ctx.fillRect(left + 2, wallTop, 2, wallH);
+  ctx.fillRect(left + width - 4, wallTop, 2, wallH);
+  ctx.fillRect(left + 14, wallTop + 10, width - 18, 2);
+  for (const post of [16, 26, 36]) ctx.fillRect(left + post, wallTop, 2, 12);
+
+  const ovenX = left + 22;
+  const ovenY = top + height - 14;
+  ctx.fillStyle = STONE_BASE;
+  ctx.fillRect(ovenX - 1, ovenY - 2, 12, 13);
+  ctx.fillStyle = OPENING;
+  ctx.fillRect(ovenX, ovenY, 10, 10);
+  ctx.fillStyle = STONE;
+  ctx.fillRect(ovenX, ovenY, 2, 2);
+  ctx.fillRect(ovenX + 8, ovenY, 2, 2);
+}
+
+const smokes = [];
+let smokeClock = 0;
+
+export function updateSmoke() {
+  smokeClock += 1;
+  if (areaIndex === 0 && smokeClock % 14 === 0) {
+    for (const building of BUILDINGS) {
+      if (building.kind !== "baker") continue;
+      smokes.push({
+        x: building.x * CELL + CHIMNEY_X + 2,
+        y: building.y * CELL - CHIMNEY_RISE,
+        drift: Math.random() < 0.5 ? -0.18 : 0.18,
+        life: 42,
+        max: 42,
+        size: 2,
+      });
+    }
+  }
+  for (let i = smokes.length - 1; i >= 0; i--) {
+    const puff = smokes[i];
+    puff.y -= 0.4;
+    puff.x += puff.drift;
+    if (puff.life < 24) puff.size = 3;
+    puff.life -= 1;
+    if (puff.life <= 0) smokes.splice(i, 1);
+  }
+}
+
+function drawSmoke() {
+  if (areaIndex !== 0) return;
+  for (const puff of smokes) {
+    ctx.globalAlpha = puff.life / puff.max;
+    ctx.fillStyle = puff.life > 28 ? "#f4f0e8" : "#d4cdc2";
+    ctx.fillRect(Math.round(puff.x), Math.round(puff.y), puff.size, puff.size);
+  }
+  ctx.globalAlpha = 1;
+}
 
 function drawBuilding(building, part) {
   const left = building.x * CELL;
@@ -84,16 +194,7 @@ function drawBuilding(building, part) {
   const roofHeight = buildingRoofPixels(building);
 
   if (part === "roof") {
-    for (let row = 0; row < roofHeight; row++) {
-      const inset = Math.floor(((roofHeight - row) * (width / 2 - 2)) / roofHeight);
-      const x = left + inset;
-      const w = width - inset * 2;
-      ctx.fillStyle = row % 3 === 2 ? TILE : ROOF;
-      ctx.fillRect(x, top + row, w, 1);
-      ctx.fillStyle = TIMBER;
-      ctx.fillRect(x, top + row, 1, 1);
-      ctx.fillRect(x + w - 1, top + row, 1, 1);
-    }
+    drawRoof(building);
     return;
   }
 
@@ -142,7 +243,10 @@ function drawBuilding(building, part) {
 }
 
 function drawBuildings(part) {
-  for (const building of BUILDINGS) drawBuilding(building, part);
+  for (const building of BUILDINGS) {
+    if (building.kind === "baker") drawBaker(building, part);
+    else drawBuilding(building, part);
+  }
 }
 
 function drawGround() {
@@ -422,6 +526,7 @@ export function render() {
   drawTrees("trunk");
   drawBuildings("roof");
   drawTrees("leaf");
+  drawSmoke();
   drawHealth();
 }
 
@@ -477,9 +582,9 @@ function drawHealth() {
     textX += glyph[0].length + 1;
   }
   const barY = y0 + HEART.length + 2;
-  const barW = player.maxHp * 6;
+  const barW = 5 * 6;
   const barH = 3;
-  const filled = Math.round((player.hp / player.maxHp) * barW);
+  const filled = Math.round((Math.min(player.hp, 5) / 5) * barW);
   ctx.fillStyle = "#1a140f";
   ctx.fillRect(x0 - 1, barY - 1, barW + 2, barH + 2);
   ctx.fillStyle = "#3a2e28";

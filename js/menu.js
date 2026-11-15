@@ -1,13 +1,13 @@
-import { COLS, ROWS } from "./config.js?v=40";
-import { player, resetPlayer } from "./player.js?v=40";
-import { heldItem, items, resetItems } from "./items.js?v=40";
-import { NPCS, resetNpcs } from "./npcs.js?v=40";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=40";
+import { COLS, ROWS } from "./config.js?v=54";
+import { healPlayer, player, resetPlayer } from "./player.js?v=54";
+import { coinCanvas, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=54";
+import { NPCS, resetNpcs } from "./npcs.js?v=54";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=54";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
 const CONFIRM = ["Yes", "No"];
-const ITEM_NAMES = { sword: "Sword", hoe: "Garden Hoe" };
+const ITEM_NAMES = { sword: "Sword", hoe: "Garden Hoe", bread: "Bread loaf" };
 const FACINGS = ["up", "down", "left", "right"];
 const CELL_PX = 6;
 const MAP_GAP = 12;
@@ -30,7 +30,10 @@ const menuBody = document.getElementById("menu-body");
 let open = false;
 let screen = "main";
 let index = 0;
+let itemIndex = 0;
 let confirmIndex = 0;
+let eatFull = false;
+let note = "";
 let painted = "";
 let saved = false;
 
@@ -57,8 +60,17 @@ export function closeMenu() {
 
 export function moveMenu(dy) {
   if (!open) return;
-  if (screen === "confirm") {
+  if (screen === "note") return;
+  if (screen === "eat" && eatFull) return;
+  if (screen === "confirm" || screen === "eat") {
     confirmIndex = (confirmIndex + dy + CONFIRM.length) % CONFIRM.length;
+    paintMenu();
+    return;
+  }
+  if (screen === "items") {
+    const count = itemEntries().length;
+    if (count === 0) return;
+    itemIndex = (itemIndex + dy + count) % count;
     paintMenu();
     return;
   }
@@ -79,8 +91,49 @@ export function selectMenu() {
     }
     return;
   }
+  if (screen === "note") {
+    note = "";
+    screen = "items";
+    painted = "";
+    paintMenu();
+    return;
+  }
+  if (screen === "eat") {
+    if (eatFull) {
+      eatFull = false;
+      screen = "items";
+      painted = "";
+      paintMenu();
+      return;
+    }
+    if (confirmIndex === 0) eatBread();
+    else {
+      screen = "items";
+      painted = "";
+      paintMenu();
+    }
+    return;
+  }
+  if (screen === "items") {
+    const kind = itemEntries()[itemIndex]?.kind;
+    if (kind === "bread") {
+      screen = "eat";
+      confirmIndex = 0;
+      painted = "";
+      paintMenu();
+    } else if (kind === "gold") {
+      screen = "note";
+      note = "Can't use this here";
+      painted = "";
+      paintMenu();
+    }
+    return;
+  }
   if (screen !== "main") return;
-  if (index === 0) screen = "items";
+  if (index === 0) {
+    screen = "items";
+    itemIndex = 0;
+  }
   else if (index === 1) screen = "map";
   else if (index === 2) {
     saveGame();
@@ -117,6 +170,14 @@ function beginNewGame() {
 
 export function backMenu() {
   if (!open) return;
+  if (screen === "note" || screen === "eat") {
+    note = "";
+    eatFull = false;
+    screen = "items";
+    painted = "";
+    paintMenu();
+    return;
+  }
   if (screen === "main") {
     closeMenu();
     return;
@@ -127,11 +188,74 @@ export function backMenu() {
   paintMenu();
 }
 
+function eatBread() {
+  if (player.hp >= player.maxHp) {
+    eatFull = true;
+    painted = "";
+    paintMenu();
+    return;
+  }
+  if (takeBread()) healPlayer(5);
+  const count = itemEntries().length;
+  if (itemIndex >= count) itemIndex = Math.max(0, count - 1);
+  screen = "items";
+  painted = "";
+  paintMenu();
+}
+
+function itemEntries() {
+  const entries = [];
+  const held = heldItem();
+  if (held) entries.push({ kind: held.kind, label: ITEM_NAMES[held.kind] || held.kind });
+  if (stores.bread > 0) {
+    entries.push({ kind: "bread", label: `Bread loaf x ${stores.bread}` });
+  }
+  if (stores.gold > 0) {
+    entries.push({ kind: "gold", label: `Gold x ${stores.gold}` });
+  }
+  return entries;
+}
+
 export function paintMenu() {
   if (!open) return;
   if (screen === "map") {
     if (painted !== "map") buildMap();
     drawMap();
+    return;
+  }
+
+  if (screen === "note") {
+    if (painted === "note") return;
+    painted = "note";
+    menuTitle.textContent = "Gold";
+    menuBody.replaceChildren();
+    const line = document.createElement("p");
+    line.className = "menu-row";
+    line.textContent = note;
+    menuBody.appendChild(line);
+    return;
+  }
+
+  if (screen === "eat") {
+    const signature = `eat:${confirmIndex}:${eatFull ? 1 : 0}`;
+    if (signature === painted) return;
+    painted = signature;
+    menuTitle.textContent = "Bread loaf";
+    menuBody.replaceChildren();
+    const ask = document.createElement("p");
+    ask.className = "menu-row";
+    ask.textContent = eatFull ? "Your health is full." : "Eat to raise health 5 hp?";
+    menuBody.appendChild(ask);
+    if (eatFull) return;
+    CONFIRM.forEach((label, option) => {
+      const row = document.createElement("p");
+      row.className = option === confirmIndex ? "menu-row selected" : "menu-row";
+      const mark = document.createElement("span");
+      mark.className = "menu-mark";
+      mark.textContent = option === confirmIndex ? ">" : "";
+      row.append(mark, document.createTextNode(label));
+      menuBody.appendChild(row);
+    });
     return;
   }
 
@@ -159,7 +283,7 @@ export function paintMenu() {
 
   const signature = screen === "main"
     ? `main:${index}:${saved ? 1 : 0}`
-    : `items:${heldItem()?.kind || ""}`;
+    : `items:${heldItem()?.kind || ""}:${stores.bread}:${stores.gold}:${itemIndex}`;
   if (signature === painted) return;
   painted = signature;
 
@@ -181,11 +305,28 @@ export function paintMenu() {
 
   menuTitle.textContent = "Items";
   menuBody.replaceChildren();
-  const row = document.createElement("p");
-  row.className = "menu-row";
-  const held = heldItem();
-  row.textContent = held ? ITEM_NAMES[held.kind] || held.kind : "No Items";
-  menuBody.appendChild(row);
+  const entries = itemEntries();
+  if (entries.length === 0) {
+    const row = document.createElement("p");
+    row.className = "menu-row";
+    row.textContent = "No Items";
+    menuBody.appendChild(row);
+    return;
+  }
+  if (itemIndex >= entries.length) itemIndex = entries.length - 1;
+  entries.forEach((entry, option) => {
+    const row = document.createElement("p");
+    row.className = option === itemIndex ? "menu-row selected" : "menu-row";
+    const mark = document.createElement("span");
+    mark.className = "menu-mark";
+    mark.textContent = option === itemIndex ? ">" : "";
+    const icon = document.createElement("span");
+    icon.className = "menu-icon";
+    if (entry.kind === "bread") icon.append(loafCanvas());
+    if (entry.kind === "gold") icon.append(coinCanvas());
+    row.append(mark, icon, document.createTextNode(entry.label));
+    menuBody.appendChild(row);
+  });
 }
 
 function buildMap() {
@@ -229,7 +370,8 @@ function cellColor(area, areaNumber, x, y) {
   if (areaNumber === areaIndex && player.x === x && player.y === y) return COLORS.player;
   if (area.trees.some((tree) => tree.x === x && tree.y === y)) return COLORS.tree;
   if (area.buildings.some((building) => (
-    x >= building.x && x < building.x + building.w && y >= building.y && y < building.y + building.h
+    (x >= building.x && x < building.x + building.w && y >= building.y && y < building.y + building.h) ||
+    (building.kind === "baker" && x === building.x && y === building.y - 1)
   ))) return COLORS.building;
   if ("b1234".includes(area.bushes[y][x])) return COLORS.bush;
   return COLORS[area.map[y][x]] || COLORS.g;
@@ -258,7 +400,9 @@ function saveGame() {
       facing: npc.facing,
       dead: !!npc.dead,
       wait: npc.wait,
+      met: !!npc.met,
     })),
+    stores: { bread: stores.bread, gold: stores.gold },
   };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -309,6 +453,9 @@ export function loadGame() {
     player.holding = holding;
   }
 
+  if (Number.isInteger(data.stores?.bread) && data.stores.bread >= 0) stores.bread = data.stores.bread;
+  if (Number.isInteger(data.stores?.gold) && data.stores.gold >= 0) stores.gold = data.stores.gold;
+
   if (!Array.isArray(data.npcs)) return;
   for (const saved of data.npcs) {
     const npc = NPCS.find((entry) => entry.name === saved?.name);
@@ -318,6 +465,7 @@ export function loadGame() {
     npc.y = saved.y;
     npc.facing = saved.facing;
     npc.dead = !!saved.dead;
+    npc.met = !!saved.met;
     if (Number.isInteger(saved.wait) && saved.wait > 0) npc.wait = saved.wait;
   }
 }

@@ -133,19 +133,55 @@ canvas {
 }
 
 .menu-row {
+  display: flex;
+  align-items: center;
   margin: 0;
   font-size: 18px;
   line-height: 1.5;
 }
 
 .menu-mark {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
   width: 1.1em;
   color: #e6c15a;
 }
 
+.menu-icon {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  width: 28px;
+  height: 14px;
+  margin-right: 6px;
+}
+
 .menu-row.selected {
   color: #e6c15a;
+}
+
+#menu-body .menu-loaf,
+#menu-body .menu-coin,
+#dialogue-line .menu-loaf {
+  display: block;
+  flex: none;
+  width: 28px;
+  height: 14px;
+  min-height: 14px;
+  object-fit: none;
+  background: none;
+  box-shadow: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+#menu-body .menu-coin {
+  width: 20px;
+}
+
+#dialogue-line .menu-loaf {
+  margin-right: 6px;
 }
 
 .map-names {

@@ -1,5 +1,5 @@
-import { CELL } from "./config.js?v=40";
-import { FARM_SPRITES, FARM_WALK } from "./pixels.js?v=40";
+import { CELL } from "./config.js?v=54";
+import { FARM_SPRITES, FARM_WALK } from "./pixels.js?v=54";
 
 const SLIDE = 2;
 
@@ -27,12 +27,17 @@ export function resetPlayer() {
   player.step = 0;
   player.walk = 0;
   player.wrap = false;
+  player.maxHp = 5;
   player.hp = player.maxHp;
   player.holding = null;
 }
 
 export function hurtPlayer(amount) {
   player.hp = Math.max(0, player.hp - amount);
+}
+
+export function healPlayer(amount) {
+  player.hp = Math.min(5, player.hp + amount);
 }
 
 export function updatePlayer(dir, tryStep) {

@@ -1,5 +1,5 @@
-import { CELL, COLS, ROWS } from "./config.js?v=40";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=40";
+import { CELL, COLS, ROWS } from "./config.js?v=54";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=54";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -32,6 +32,7 @@ const VILLAGE_BUILDINGS = [
   { x: 2, y: 11, w: 3, h: 4 },
   { x: 10, y: 3, w: 4, h: 4 },
   { x: 4, y: 4, w: 3, h: 3 },
+  { kind: "baker", x: 15, y: 5, w: 3, h: 3 },
 ];
 
 // Fixed bushes. b is a bush on grass. Same layout every load.
@@ -44,7 +45,7 @@ const VILLAGE_BUSHES = [
   ".........b..........",
   "...b................",
   "bb..................",
-  "................b...",
+  "....................",
   "....................",
   "bb...b...........b..",
   "......b........bb...",
@@ -221,12 +222,16 @@ export function buildingRoofPixels(building) {
 }
 
 function hitsWall(buildings, x, y) {
-  return buildings.some((building) => (
-    x >= building.x &&
-    x < building.x + building.w &&
-    y >= building.y + Math.floor(buildingRoofPixels(building) / CELL) &&
-    y < building.y + building.h
-  ));
+  return buildings.some((building) => {
+    const chimney = building.kind === "baker" && x === building.x && y >= building.y - 1 && y < building.y + building.h;
+    if (chimney) return true;
+    return (
+      x >= building.x &&
+      x < building.x + building.w &&
+      y >= building.y + Math.floor(buildingRoofPixels(building) / CELL) &&
+      y < building.y + building.h
+    );
+  });
 }
 
 export function buildingAt(x, y) {
