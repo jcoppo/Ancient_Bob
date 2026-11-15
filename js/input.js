@@ -2,8 +2,6 @@ import { npcInFront } from "./npcs.js";
 import { dialogueIsOpen, handleSpace } from "./dialogue.js";
 import { dropItem, heldItem, itemInReach, pickupItem, startThrust } from "./items.js";
 
-const status = document.getElementById("status");
-
 export let showGrid = false;
 
 const KEY_DIRS = {
@@ -74,9 +72,6 @@ window.addEventListener("keydown", (event) => {
 
   if (key === "q") {
     showGrid = !showGrid;
-    status.textContent = showGrid
-      ? "Grid on · Arrows or WASD move · Space or Z acts · X drops · Q toggles the grid"
-      : "Grid off · Arrows or WASD move · Space or Z acts · X drops · Q toggles the grid";
     event.preventDefault();
   }
 });

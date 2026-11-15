@@ -7,11 +7,21 @@ html, body {
 }
 
 body {
+  --pad-top: 16px;
+  --pad-bottom: 18px;
+  --title: 44px;
+  --gap: 10px;
+  --board: min(
+    calc(100dvh - var(--pad-top) - var(--pad-bottom) - var(--title) - var(--gap)),
+    calc(100vw - 32px)
+  );
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  box-sizing: border-box;
+  height: 100dvh;
+  padding: var(--pad-top) 0 var(--pad-bottom);
+  overflow: hidden;
 }
 
 h1 {
@@ -33,8 +43,8 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 10px;
-  width: min(88vmin, 768px);
+  gap: var(--gap);
+  width: var(--board);
 }
 
 .topbar {
@@ -43,19 +53,20 @@ h1 {
   align-items: center;
   justify-content: flex-end;
   width: 100%;
-  min-height: 44px;
+  height: var(--title);
+  min-height: var(--title);
 }
 
 .screen {
   position: relative;
-  width: 100%;
+  width: var(--board);
+  height: var(--board);
 }
 
 canvas {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 1;
+  height: 100%;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   background: #000;
@@ -136,10 +147,18 @@ canvas {
 
 p {
   margin: 0;
-  max-width: min(88vmin, 768px);
   font-size: 14px;
   line-height: 1.45;
   letter-spacing: 0.02em;
-  text-align: center;
+}
+
+#status {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 28px);
+  width: max-content;
+  white-space: pre-line;
+  text-align: left;
+  line-height: 1.7;
 }
   
