@@ -42,39 +42,74 @@ function drawBushes() {
   }
 }
 
+const STONE = "#e4dcc8";
+const STONE_BASE = "#6e604e";
+const TIMBER = "#5c4634";
+const ROOF = "#a64b38";
+const TILE = "#8a3c2c";
+const DOOR = "#6b4630";
+const OPENING = "#241c16";
+
 function drawBuilding(building) {
   const left = building.x * CELL;
   const top = building.y * CELL;
   const width = building.w * CELL;
   const height = building.h * CELL;
-  const roofHeight = Math.max(8, Math.floor(height * 0.34));
+  const roofHeight = Math.max(12, Math.min(Math.floor(width * 0.34), Math.floor(height * 0.42)));
 
-  ctx.fillStyle = "#8d4034";
   for (let row = 0; row < roofHeight; row++) {
-    const inset = Math.floor(((roofHeight - row) * (width / 2 - 1)) / roofHeight);
-    ctx.fillRect(left + inset, top + row, width - inset * 2, 1);
+    const inset = Math.floor(((roofHeight - row) * (width / 2 - 2)) / roofHeight);
+    const x = left + inset;
+    const w = width - inset * 2;
+    ctx.fillStyle = row % 3 === 2 ? TILE : ROOF;
+    ctx.fillRect(x, top + row, w, 1);
+    ctx.fillStyle = TIMBER;
+    ctx.fillRect(x, top + row, 1, 1);
+    ctx.fillRect(x + w - 1, top + row, 1, 1);
   }
 
   const wallTop = top + roofHeight;
-  ctx.fillStyle = "#d7c09a";
-  ctx.fillRect(left + 1, wallTop, width - 2, height - roofHeight);
-  ctx.fillStyle = "#4a3424";
+  const wallH = height - roofHeight;
+  ctx.fillStyle = STONE;
+  ctx.fillRect(left + 2, wallTop, width - 4, wallH);
+  ctx.fillStyle = STONE_BASE;
+  ctx.fillRect(left + 2, top + height - 2, width - 4, 2);
+
+  ctx.fillStyle = TIMBER;
   ctx.fillRect(left + 1, wallTop, width - 2, 2);
+  ctx.fillRect(left + 2, wallTop, 2, wallH);
+  ctx.fillRect(left + width - 4, wallTop, 2, wallH);
+  if (building.w >= 4) {
+    ctx.fillRect(left + 18, wallTop, 2, wallH);
+    ctx.fillRect(left + width - 20, wallTop, 2, wallH);
+  }
+  if (building.h >= 4) {
+    ctx.fillRect(left + 2, wallTop + Math.floor(wallH * 0.4), width - 4, 2);
+  }
 
-  const doorWidth = 6;
-  const doorHeight = Math.min(12, height - roofHeight - 4);
-  ctx.fillStyle = "#3a2618";
-  ctx.fillRect(
-    left + Math.floor((width - doorWidth) / 2),
-    top + height - doorHeight,
-    doorWidth,
-    doorHeight
-  );
+  const doorW = building.w >= 4 ? 8 : 6;
+  const doorH = Math.min(building.h >= 4 ? 16 : 12, wallH - 6);
+  const doorX = left + Math.floor((width - doorW) / 2);
+  const doorY = top + height - doorH;
+  ctx.fillStyle = TIMBER;
+  ctx.fillRect(doorX - 1, doorY, doorW + 2, doorH);
+  ctx.fillStyle = DOOR;
+  ctx.fillRect(doorX, doorY, doorW, doorH);
+  ctx.fillStyle = TIMBER;
+  ctx.fillRect(doorX + Math.floor(doorW / 2), doorY, 1, doorH);
 
-  ctx.fillStyle = "#6eb4c8";
-  const windowY = wallTop + 4;
-  ctx.fillRect(left + 5, windowY, 6, 6);
-  if (building.w >= 4) ctx.fillRect(left + width - 11, windowY, 6, 6);
+  const win = 4;
+  const windows = building.w >= 4 ? [left + 10, left + width - 14] : [left + 8, left + width - 12];
+  const rows = [wallTop + 6];
+  if (building.h >= 4) rows.push(wallTop + Math.floor(wallH * 0.4) + 4);
+  for (const winY of rows) {
+    for (const wx of windows) {
+      ctx.fillStyle = TIMBER;
+      ctx.fillRect(wx - 1, winY - 1, win + 2, win + 2);
+      ctx.fillStyle = OPENING;
+      ctx.fillRect(wx, winY, win, win);
+    }
+  }
 }
 
 function drawBuildings() {
