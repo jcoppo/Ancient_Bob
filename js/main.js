@@ -1,36 +1,33 @@
 import { COLS, FRAME_MS, ROWS } from "./config.js";
 import { NPCS, updateNpcs } from "./npcs.js";
-import { player, takeMove } from "./player.js";
+import { player, updatePlayer } from "./player.js";
 import { blockedCell } from "./collision.js";
 import { dialogueIsOpen } from "./dialogue.js";
 import { areaIndex, crossingBlocked, enterArea } from "./world.js";
+import { heldDirection } from "./input.js";
 import { render } from "./render.js";
-import "./input.js";
 
-function crossedEdge(nx, ny) {
+function tryStep(dx, dy) {
+  const nx = player.x + dx;
+  const ny = player.y + dy;
   if (ny < 0 || ny >= ROWS) return false;
-  if (nx >= COLS) {
-    if (!crossingBlocked(areaIndex + 1, 0, ny, NPCS)) {
-      enterArea(areaIndex + 1);
-      player.x = 0;
-      player.y = ny;
-    }
+  if (nx < 0 || nx >= COLS) {
+    const next = nx < 0 ? areaIndex - 1 : areaIndex + 1;
+    const destX = nx < 0 ? COLS - 1 : 0;
+    if (crossingBlocked(next, destX, ny, NPCS)) return false;
+    enterArea(next);
+    player.x = destX;
+    player.y = ny;
+    player.wrap = true;
     return true;
   }
-  if (nx < 0) {
-    if (!crossingBlocked(areaIndex - 1, COLS - 1, ny, NPCS)) {
-      enterArea(areaIndex - 1);
-      player.x = COLS - 1;
-      player.y = ny;
-    }
-    return true;
-  }
-  return false;
+  player.wrap = false;
+  return !blockedCell(nx, ny, player, NPCS);
 }
 
 function update() {
   if (!dialogueIsOpen()) updateNpcs();
-  takeMove((x, y) => crossedEdge(x, y) || blockedCell(x, y, player, NPCS));
+  updatePlayer(heldDirection(), tryStep);
 }
 
 let lastTime = 0;

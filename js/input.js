@@ -1,4 +1,3 @@
-import { moveQueue } from "./player.js";
 import { npcInFront } from "./npcs.js";
 import { dialogueIsOpen, handleSpace } from "./dialogue.js";
 
@@ -17,19 +16,39 @@ const KEY_DIRS = {
   d: [1, 0, "right"],
 };
 
-window.addEventListener("keydown", (event) => {
-  if (event.repeat) return;
+const heldDirs = [];
 
+function holdDirection(key) {
+  const index = heldDirs.indexOf(key);
+  if (index !== -1) heldDirs.splice(index, 1);
+  heldDirs.push(key);
+}
+
+function releaseDirection(key) {
+  const index = heldDirs.indexOf(key);
+  if (index !== -1) heldDirs.splice(index, 1);
+}
+
+export function heldDirection() {
+  if (dialogueIsOpen()) return null;
+  const key = heldDirs.at(-1);
+  return key ? KEY_DIRS[key] : null;
+}
+
+window.addEventListener("keydown", (event) => {
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+
+  if (KEY_DIRS[key]) {
+    event.preventDefault();
+    if (!event.repeat && !dialogueIsOpen()) holdDirection(key);
+    return;
+  }
+
+  if (event.repeat) return;
 
   if (event.key === " ") {
     event.preventDefault();
     handleSpace(npcInFront());
-    return;
-  }
-
-  if (dialogueIsOpen() && KEY_DIRS[key]) {
-    event.preventDefault();
     return;
   }
 
@@ -39,12 +58,14 @@ window.addEventListener("keydown", (event) => {
       ? "Grid on · Arrows or WASD move · Space talks · Q toggles the grid"
       : "Grid off · Arrows or WASD move · Space talks · Q toggles the grid";
     event.preventDefault();
-    return;
   }
+});
 
-  const dir = KEY_DIRS[key];
-  if (!dir) return;
+window.addEventListener("keyup", (event) => {
+  const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+  releaseDirection(key);
+});
 
-  event.preventDefault();
-  moveQueue.push(dir);
+window.addEventListener("blur", () => {
+  heldDirs.length = 0;
 });

@@ -1,23 +1,48 @@
-import { COLS, ROWS } from "./config.js";
+import { CELL, COLS, ROWS } from "./config.js";
+
+const SLIDE = 2;
 
 export const player = {
   x: Math.floor(COLS / 2) - 1,
   y: Math.floor(ROWS / 2) - 1,
   facing: "down",
+  dx: 0,
+  dy: 0,
+  step: 0,
+  walk: 0,
+  wrap: false,
 };
 
-export const moveQueue = [];
+export function updatePlayer(dir, tryStep) {
+  let continuing = false;
 
-export function takeMove(blocked) {
-  const dir = moveQueue.shift();
-  if (!dir) return;
+  if (player.step > 0) {
+    player.step += SLIDE;
+    if (player.step % (CELL / 2) === 0) player.walk ^= 1;
+    if (player.step < CELL) return;
+
+    if (!player.wrap) {
+      player.x += player.dx;
+      player.y += player.dy;
+    }
+    player.step = 0;
+    player.dx = 0;
+    player.dy = 0;
+    player.wrap = false;
+    continuing = true;
+  }
+
+  if (!dir) {
+    player.walk = 0;
+    return;
+  }
 
   const [dx, dy, facing] = dir;
-  const nx = player.x + dx;
-  const ny = player.y + dy;
   player.facing = facing;
-  if (blocked(nx, ny)) return;
+  if (!tryStep(dx, dy)) return;
 
-  player.x = nx;
-  player.y = ny;
+  player.dx = dx;
+  player.dy = dy;
+  player.step = SLIDE;
+  if (!continuing) player.walk = 1;
 }

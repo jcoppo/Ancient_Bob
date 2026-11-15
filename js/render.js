@@ -1,5 +1,5 @@
 import { CELL, COLS, ROWS } from "./config.js";
-import { BUSH, GRASS_TILE, OUTLINE, PALETTE, PATH_TILE, SPRITES, WATER_TILE } from "./pixels.js";
+import { BUSH, GRASS_TILE, OUTLINE, PALETTE, PATH_TILE, SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js";
 import { BUILDINGS, BUSHES, MAP, areaIndex } from "./world.js";
 import { player } from "./player.js";
 import { NPCS } from "./npcs.js";
@@ -104,11 +104,12 @@ function spritePixel(sprite, x, y) {
   return sprite[y][x];
 }
 
-function drawCharacter(person, palette) {
-  const sprite = person.facing === "right" ? SPRITES.left : SPRITES[person.facing];
+function drawCharacter(person, palette, originX = person.x * CELL, originY = person.y * CELL, frame = 0) {
+  const facingKey = person.facing === "right" ? "left" : person.facing;
+  const sprite = frame === 0 ? SPRITES[facingKey] : WALK_SPRITES[frame - 1][facingKey];
   const flip = person.facing === "right";
-  const ox = person.x * CELL;
-  const oy = person.y * CELL;
+  const ox = originX;
+  const oy = originY;
 
   const screenX = (x) => (flip ? ox + (CELL - 1 - x) : ox + x);
 
@@ -144,5 +145,7 @@ export function render() {
   if (areaIndex === 0) {
     for (const npc of NPCS) drawCharacter(npc, npc.palette);
   }
-  drawCharacter(player, PALETTE);
+  const slideX = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
+  const slideY = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
+  drawCharacter(player, PALETTE, slideX, slideY, player.step > 0 ? player.walk + 1 : 0);
 }
