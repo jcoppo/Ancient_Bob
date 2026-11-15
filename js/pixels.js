@@ -225,6 +225,50 @@ export const WALK_SPRITES = [
   },
 ];
 
+// Arm rows for holding an item in front. Legs stay on the standing and walk sprites.
+export const HOLD_ARMS = {
+  down: {
+    7: "....S.TTTT.S....",
+    8: "...SS.TTTT.SS...",
+    9: "....SSSSSS......",
+  },
+  up: {
+    7: "..S..STTTTSS..S.",
+    8: "...S.TTTTTT.S...",
+  },
+  left: {
+    7: "...S...STTTT....",
+    8: "..SS..TTTTTTTT..",
+    9: "...S.TTTTTTTTT..",
+  },
+};
+
+export const SWORD_PALETTE = {
+  b: "#e2b06a",
+  d: "#a56a38",
+  G: "#c4894e",
+  h: "#6a4030",
+};
+
+export const SWORD_SPRITE = [
+  ".......b........",
+  "......dbd.......",
+  "......dbd.......",
+  "......dbd.......",
+  "......dbd.......",
+  "......dbd.......",
+  "......dbd.......",
+  "......dbd.......",
+  "......dbd.......",
+  ".....GdbdG......",
+  "....GGdbdGG.....",
+  ".....G.h.G......",
+  ".......h........",
+  ".......h........",
+  "................",
+  "................",
+];
+
 export const OUTLINE = "#1a140f";
 
 

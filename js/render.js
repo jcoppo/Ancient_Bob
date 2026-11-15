@@ -1,5 +1,6 @@
 import { CELL, COLS, ROWS } from "./config.js";
-import { BUSH, GRASS_TILE, OUTLINE, PALETTE, PATH_TILE, SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js";
+import { BUSH, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, WALK_SPRITES, WATER_TILE } from "./pixels.js";
+import { groundItems, heldItem } from "./items.js";
 import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js";
 import { player } from "./player.js";
 import { NPCS } from "./npcs.js";
@@ -142,14 +143,9 @@ function spritePixel(sprite, x, y) {
   return sprite[y][x];
 }
 
-function drawCharacter(person, palette, originX = person.x * CELL, originY = person.y * CELL, frame = 0) {
-  const facingKey = person.facing === "right" ? "left" : person.facing;
-  const sprite = frame === 0 ? SPRITES[facingKey] : WALK_SPRITES[frame - 1][facingKey];
-  const flip = person.facing === "right";
-  const ox = originX;
-  const oy = originY;
-
-  const screenX = (x) => (flip ? ox + (CELL - 1 - x) : ox + x);
+function drawSprite(sprite, palette, ox, oy, flip) {
+  const width = sprite[0].length;
+  const screenX = (x) => (flip ? ox + (width - 1 - x) : ox + x);
 
   ctx.fillStyle = OUTLINE;
   for (let y = 0; y < sprite.length; y++) {
@@ -175,16 +171,40 @@ function drawCharacter(person, palette, originX = person.x * CELL, originY = per
   }
 }
 
+function characterSprite(person, frame) {
+  const facingKey = person.facing === "right" ? "left" : person.facing;
+  const base = frame === 0 ? SPRITES[facingKey] : WALK_SPRITES[frame - 1][facingKey];
+  if (!person.holding) return base;
+  const arms = HOLD_ARMS[facingKey];
+  return base.map((row, index) => arms[index] || row);
+}
+
+function drawCharacter(person, palette, originX = person.x * CELL, originY = person.y * CELL, frame = 0) {
+  const sprite = characterSprite(person, frame);
+  drawSprite(sprite, palette, originX, originY, person.facing === "right");
+}
+
+function drawSword(ox, oy, flip) {
+  drawSprite(SWORD_SPRITE, SWORD_PALETTE, ox, oy, flip);
+}
+
 export function render() {
   drawGround();
   drawBushes();
   drawBuildings("wall");
   if (showGrid) drawGrid();
+  for (const item of groundItems()) {
+    if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
+  }
   if (areaIndex === 0) {
     for (const npc of NPCS) drawCharacter(npc, npc.palette);
   }
   const slideX = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
   const slideY = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
   drawCharacter(player, PALETTE, slideX, slideY, player.step > 0 ? player.walk + 1 : 0);
+  if (heldItem()?.kind === "sword") {
+    const [ox, oy] = { down: [4, -4], up: [4, -5], left: [-5, -4], right: [5, -4] }[player.facing];
+    drawSword(slideX + ox, slideY + oy, false);
+  }
   drawBuildings("roof");
 }

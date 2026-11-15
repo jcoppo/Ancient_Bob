@@ -1,5 +1,6 @@
 import { npcInFront } from "./npcs.js";
 import { dialogueIsOpen, handleSpace } from "./dialogue.js";
+import { dropItem, itemInReach, pickupItem } from "./items.js";
 
 const status = document.getElementById("status");
 
@@ -46,17 +47,32 @@ window.addEventListener("keydown", (event) => {
 
   if (event.repeat) return;
 
-  if (event.key === " ") {
+  if (key === " " || key === "z") {
     event.preventDefault();
+    if (dialogueIsOpen()) {
+      handleSpace();
+      return;
+    }
+    const item = itemInReach();
+    if (item) {
+      pickupItem(item);
+      return;
+    }
     handleSpace(npcInFront());
+    return;
+  }
+
+  if (key === "x") {
+    event.preventDefault();
+    if (!dialogueIsOpen()) dropItem();
     return;
   }
 
   if (key === "q") {
     showGrid = !showGrid;
     status.textContent = showGrid
-      ? "Grid on · Arrows or WASD move · Space talks · Q toggles the grid"
-      : "Grid off · Arrows or WASD move · Space talks · Q toggles the grid";
+      ? "Grid on · Arrows or WASD move · Space or Z acts · X drops · Q toggles the grid"
+      : "Grid off · Arrows or WASD move · Space or Z acts · X drops · Q toggles the grid";
     event.preventDefault();
   }
 });
