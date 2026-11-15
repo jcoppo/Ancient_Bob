@@ -1,5 +1,5 @@
-import { CELL, COLS, ROWS } from "./config.js?v=58";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=58";
+import { CELL, COLS, ROWS } from "./config.js?v=61";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=61";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -61,21 +61,34 @@ const VILLAGE_BUSHES = [
 
 const MEADOW_MAP = Array.from({ length: 20 }, () => "gggggggggggggggggggg");
 
-// Two rows of soil under the left pine. x is the column range, y the row range.
-const MEADOW_PLOT = { x0: 4, x1: 9, y0: 9, y1: 11 };
+// One row lower than the old plot. The top row is five tiles; the two under it are seven, one tile wider on each side.
+const MEADOW_SOIL = [
+  { y: 10, x0: 4, x1: 9 },
+  { y: 11, x0: 3, x1: 10 },
+  { y: 12, x0: 3, x1: 10 },
+];
 
-function stampSoil(map, plot) {
-  for (let y = plot.y0; y < plot.y1; y++) {
-    let row = map[y];
+// The old top row, so a saved meadow loses those five tiles.
+const MEADOW_CLEARED = [
+  { y: 9, x0: 4, x1: 9 },
+];
+
+function paintTiles(map, rows, from, to) {
+  for (const plot of rows) {
+    let row = map[plot.y];
     for (let x = plot.x0; x < plot.x1; x++) {
-      if (row[x] !== "g") continue;
-      row = row.slice(0, x) + "s" + row.slice(x + 1);
+      if (row[x] !== from) continue;
+      row = row.slice(0, x) + to + row.slice(x + 1);
     }
-    map[y] = row;
+    map[plot.y] = row;
   }
 }
 
-stampSoil(MEADOW_MAP, MEADOW_PLOT);
+function stampSoil(map, rows) {
+  paintTiles(map, rows, "g", "s");
+}
+
+stampSoil(MEADOW_MAP, MEADOW_SOIL);
 
 // Open on the left. Bushes seal the top, bottom, and right, with more scattered inside.
 const MEADOW_BUSHES = [
@@ -90,7 +103,7 @@ const MEADOW_BUSHES = [
   "...................b",
   "..b................b",
   "...........b.......b",
-  "....b..............b",
+  ".b.................b",
   "..b................b",
   ".......b...........b",
   ".........b.........b",
@@ -166,7 +179,12 @@ export function applySavedTerrain(saved) {
     area.map.forEach((row, y) => { AREAS[index].map[y] = row; });
     area.bushes.forEach((row, y) => { AREAS[index].bushes[y] = row; });
   });
-  stampSoil(AREAS[1].map, MEADOW_PLOT);
+  paintTiles(AREAS[1].map, MEADOW_CLEARED, "s", "g");
+  stampSoil(AREAS[1].map, MEADOW_SOIL);
+  const bushRow = AREAS[1].bushes[11];
+  if (bushRow?.[4] === "b" && bushRow[1] === ".") {
+    AREAS[1].bushes[11] = `${bushRow.slice(0, 1)}b${bushRow.slice(2, 4)}.${bushRow.slice(5)}`;
+  }
   enterArea(areaIndex);
   return true;
 }

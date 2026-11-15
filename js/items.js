@@ -1,7 +1,7 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=58";
-import { WHEAT_SPRITES } from "./pixels.js?v=58";
-import { player } from "./player.js?v=58";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=58";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=61";
+import { WHEAT_SPRITES } from "./pixels.js?v=61";
+import { player } from "./player.js?v=61";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=61";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
@@ -240,6 +240,7 @@ function plantWheat(x, y) {
 export function updateCrops() {
   const last = WHEAT_SPRITES.length - 1;
   for (const crop of crops) {
+    if (crop.stage > last) crop.stage = last;
     if (crop.stage >= last) continue;
     crop.wait -= 1;
     if (crop.wait > 0) continue;
@@ -266,9 +267,11 @@ export function applyCrops(saved) {
     if (!Number.isInteger(crop?.area) || crop.area < 0 || crop.area >= areaList().length) continue;
     if (!Number.isInteger(crop.x) || crop.x < 0 || crop.x >= COLS) continue;
     if (!Number.isInteger(crop.y) || crop.y < 0 || crop.y >= ROWS) continue;
-    if (!Number.isInteger(crop.stage) || crop.stage < 0 || crop.stage > last) continue;
+    if (!Number.isInteger(crop.stage) || crop.stage < 0) continue;
+    if (areaList()[crop.area].map[crop.y]?.[crop.x] !== "s") continue;
+    const stage = Math.min(crop.stage, last);
     const wait = Number.isInteger(crop.wait) && crop.wait > 0 ? crop.wait : STAGE_FRAMES;
-    crops.push({ area: crop.area, x: crop.x, y: crop.y, stage: crop.stage, wait });
+    crops.push({ area: crop.area, x: crop.x, y: crop.y, stage, wait });
   }
 }
 

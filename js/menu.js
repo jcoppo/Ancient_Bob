@@ -1,8 +1,8 @@
-import { COLS, ROWS } from "./config.js?v=58";
-import { healPlayer, player, resetPlayer } from "./player.js?v=58";
-import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=58";
-import { NPCS, resetNpcs } from "./npcs.js?v=58";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=58";
+import { COLS, ROWS } from "./config.js?v=61";
+import { healPlayer, player, resetPlayer } from "./player.js?v=61";
+import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=61";
+import { NPCS, resetNpcs } from "./npcs.js?v=61";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=61";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
@@ -464,7 +464,7 @@ export function loadGame() {
     if (!npc || !cellNumber(saved.x) || !cellNumber(saved.y)) continue;
     if (!FACINGS.includes(saved.facing)) continue;
     npc.x = saved.x;
-    npc.y = saved.y;
+    npc.y = npc.name === "Farmer" && saved.y === 9 ? npc.homeY : saved.y;
     npc.facing = saved.facing;
     npc.dead = !!saved.dead;
     npc.met = !!saved.met;

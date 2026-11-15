@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=58";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=58";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=58";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=58";
-import { player } from "./player.js?v=58";
-import { NPCS } from "./npcs.js?v=58";
-import { barbarian } from "./enemies.js?v=58";
-import { showGrid } from "./input.js?v=58";
+import { CELL, COLS, ROWS } from "./config.js?v=61";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=61";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=61";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=61";
+import { player } from "./player.js?v=61";
+import { NPCS } from "./npcs.js?v=61";
+import { barbarian } from "./enemies.js?v=61";
+import { showGrid } from "./input.js?v=61";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -262,7 +262,7 @@ function drawGround() {
 function drawCrops() {
   const here = crops.filter((crop) => crop.area === areaIndex).sort((a, b) => a.y - b.y);
   for (const crop of here) {
-    const sprite = WHEAT_SPRITES[crop.stage];
+    const sprite = WHEAT_SPRITES[Math.min(crop.stage, WHEAT_SPRITES.length - 1)];
     if (!sprite) continue;
     const ox = crop.x * CELL + Math.floor((CELL - sprite[0].length) / 2);
     drawSprite(sprite, WHEAT_PALETTE, ox, (crop.y + 1) * CELL - sprite.length, false);
