@@ -1,6 +1,6 @@
 import { CELL, COLS, ROWS } from "./config.js";
 import { BUSH, GRASS_TILE, OUTLINE, PALETTE, PATH_TILE, SPRITES, WALK_SPRITES, WATER_TILE } from "./pixels.js";
-import { BUILDINGS, BUSHES, MAP, areaIndex } from "./world.js";
+import { BUILDINGS, BUSHES, MAP, areaIndex, buildingRoofPixels } from "./world.js";
 import { player } from "./player.js";
 import { NPCS } from "./npcs.js";
 import { showGrid } from "./input.js";
@@ -50,22 +50,25 @@ const TILE = "#8a3c2c";
 const DOOR = "#6b4630";
 const OPENING = "#241c16";
 
-function drawBuilding(building) {
+function drawBuilding(building, part) {
   const left = building.x * CELL;
   const top = building.y * CELL;
   const width = building.w * CELL;
   const height = building.h * CELL;
-  const roofHeight = Math.max(12, Math.min(Math.floor(width * 0.34), Math.floor(height * 0.42)));
+  const roofHeight = buildingRoofPixels(building);
 
-  for (let row = 0; row < roofHeight; row++) {
-    const inset = Math.floor(((roofHeight - row) * (width / 2 - 2)) / roofHeight);
-    const x = left + inset;
-    const w = width - inset * 2;
-    ctx.fillStyle = row % 3 === 2 ? TILE : ROOF;
-    ctx.fillRect(x, top + row, w, 1);
-    ctx.fillStyle = TIMBER;
-    ctx.fillRect(x, top + row, 1, 1);
-    ctx.fillRect(x + w - 1, top + row, 1, 1);
+  if (part === "roof") {
+    for (let row = 0; row < roofHeight; row++) {
+      const inset = Math.floor(((roofHeight - row) * (width / 2 - 2)) / roofHeight);
+      const x = left + inset;
+      const w = width - inset * 2;
+      ctx.fillStyle = row % 3 === 2 ? TILE : ROOF;
+      ctx.fillRect(x, top + row, w, 1);
+      ctx.fillStyle = TIMBER;
+      ctx.fillRect(x, top + row, 1, 1);
+      ctx.fillRect(x + w - 1, top + row, 1, 1);
+    }
+    return;
   }
 
   const wallTop = top + roofHeight;
@@ -112,8 +115,8 @@ function drawBuilding(building) {
   }
 }
 
-function drawBuildings() {
-  for (const building of BUILDINGS) drawBuilding(building);
+function drawBuildings(part) {
+  for (const building of BUILDINGS) drawBuilding(building, part);
 }
 
 function drawGround() {
@@ -175,7 +178,7 @@ function drawCharacter(person, palette, originX = person.x * CELL, originY = per
 export function render() {
   drawGround();
   drawBushes();
-  drawBuildings();
+  drawBuildings("wall");
   if (showGrid) drawGrid();
   if (areaIndex === 0) {
     for (const npc of NPCS) drawCharacter(npc, npc.palette);
@@ -183,4 +186,5 @@ export function render() {
   const slideX = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
   const slideY = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
   drawCharacter(player, PALETTE, slideX, slideY, player.step > 0 ? player.walk + 1 : 0);
+  drawBuildings("roof");
 }

@@ -1,3 +1,5 @@
+import { CELL } from "./config.js";
+
 // w water, g grass, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
   "wwwwwwwwgggggggggggggggg",
@@ -114,13 +116,23 @@ export function bushAt(x, y) {
   return BUSHES[y][x] === "b";
 }
 
-export function buildingAt(x, y) {
-  return BUILDINGS.some((building) => (
+export function buildingRoofPixels(building) {
+  const width = building.w * CELL;
+  const height = building.h * CELL;
+  return Math.max(12, Math.min(Math.floor(width * 0.34), Math.floor(height * 0.42)));
+}
+
+function hitsWall(buildings, x, y) {
+  return buildings.some((building) => (
     x >= building.x &&
     x < building.x + building.w &&
-    y >= building.y &&
+    y >= building.y + Math.floor(buildingRoofPixels(building) / CELL) &&
     y < building.y + building.h
   ));
+}
+
+export function buildingAt(x, y) {
+  return hitsWall(BUILDINGS, x, y);
 }
 
 function areaAt(index) {
@@ -132,12 +144,7 @@ export function crossingBlocked(nextIndex, x, y, npcs) {
   const area = areaAt(nextIndex);
   if (!area) return true;
   if (area.map[y][x] === "w" || area.bushes[y][x] === "b") return true;
-  if (area.buildings.some((building) => (
-    x >= building.x &&
-    x < building.x + building.w &&
-    y >= building.y &&
-    y < building.y + building.h
-  ))) return true;
+  if (hitsWall(area.buildings, x, y)) return true;
   if (nextIndex === 0 && npcs.some((npc) => npc.x === x && npc.y === y)) return true;
   return false;
 }
