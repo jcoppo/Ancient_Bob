@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ancient Bob</title>
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="css/game.css?v=3">
+  <link rel="stylesheet" href="css/game.css?v=9">
 </head>
 <body>
   <div class="stage">
@@ -29,13 +29,20 @@
         <p id="dialogue-who"></p>
         <p id="dialogue-line"></p>
       </div>
+      <div id="menu" hidden>
+        <p id="menu-title"></p>
+        <div id="menu-body"></div>
+      </div>
+      <p id="menu-help">Z / Space selects
+X goes back</p>
       <p id="status">WASD / Arrows move
 Z / Space acts
 X drop item
-Q toggles the grid</p>
+Q toggles the grid
+Enter menu</p>
     </div>
   </div>
   <script type="module" src="js/music.js"></script>
-  <script type="module" src="js/main.js?v=36"></script>
+  <script type="module" src="js/main.js?v=40"></script>
 </body>
 </html>

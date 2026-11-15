@@ -1,13 +1,14 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js?v=36";
-import { NPCS, updateNpcs } from "./npcs.js?v=36";
-import { updateBarbarian } from "./enemies.js?v=36";
-import { player, updatePlayer } from "./player.js?v=36";
-import { blockedCell } from "./collision.js?v=36";
-import { dialogueIsOpen } from "./dialogue.js?v=36";
-import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=36";
-import { heldDirection } from "./input.js?v=36";
-import { updateLeaves, updateScoop, updateThrust } from "./items.js?v=36";
-import { render } from "./render.js?v=36";
+import { COLS, FRAME_MS, ROWS } from "./config.js?v=40";
+import { NPCS, updateNpcs } from "./npcs.js?v=40";
+import { updateBarbarian } from "./enemies.js?v=40";
+import { player, updatePlayer } from "./player.js?v=40";
+import { blockedCell } from "./collision.js?v=40";
+import { dialogueIsOpen } from "./dialogue.js?v=40";
+import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=40";
+import { heldDirection } from "./input.js?v=40";
+import { updateLeaves, updateScoop, updateThrust } from "./items.js?v=40";
+import { loadGame, paintMenu } from "./menu.js?v=40";
+import { render } from "./render.js?v=40";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;
@@ -56,8 +57,12 @@ function frame(now) {
     stepped = true;
   }
 
-  if (stepped) render();
+  if (stepped) {
+    render();
+    paintMenu();
+  }
 }
 
+loadGame();
 render();
 requestAnimationFrame(frame);

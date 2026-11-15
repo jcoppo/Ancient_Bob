@@ -93,6 +93,111 @@ canvas {
   display: none;
 }
 
+#menu {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 50%;
+  height: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 12px 14px;
+  border: 2px solid #e7dccb;
+  background: rgba(20, 17, 14, 0.94);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+#menu[hidden] {
+  display: none;
+}
+
+#menu-title {
+  margin-bottom: 8px;
+  color: #e6c15a;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#menu-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.menu-row {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.menu-mark {
+  display: inline-block;
+  width: 1.1em;
+  color: #e6c15a;
+}
+
+.menu-row.selected {
+  color: #e6c15a;
+}
+
+.map-names {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 18px;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.map-name {
+  flex: 1;
+  text-align: center;
+  color: #a89880;
+}
+
+.map-name.here {
+  color: #e6c15a;
+}
+
+#menu-help {
+  position: absolute;
+  left: 25%;
+  top: calc(75% + 8px);
+  width: 50%;
+  margin: 0;
+  color: #000;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+#menu[hidden] + #menu-help {
+  display: none;
+}
+
+#menu-body canvas {
+  display: block;
+  flex: 1;
+  width: 100%;
+  height: 0;
+  min-height: 0;
+  object-fit: contain;
+  object-position: left center;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
 #dialogue p {
   max-width: none;
   margin: 0;

@@ -1,5 +1,5 @@
-import { CELL } from "./config.js?v=36";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=36";
+import { CELL, COLS, ROWS } from "./config.js?v=40";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=40";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -96,8 +96,8 @@ const MEADOW_TREES = [
 ];
 
 const AREAS = [
-  { map: VILLAGE_MAP, bushes: VILLAGE_BUSHES, buildings: VILLAGE_BUILDINGS, trees: VILLAGE_TREES },
-  { map: MEADOW_MAP, bushes: MEADOW_BUSHES, buildings: [], trees: MEADOW_TREES },
+  { name: "Village", map: VILLAGE_MAP, bushes: VILLAGE_BUSHES, buildings: VILLAGE_BUILDINGS, trees: VILLAGE_TREES },
+  { name: "Meadow", map: MEADOW_MAP, bushes: MEADOW_BUSHES, buildings: [], trees: MEADOW_TREES },
 ];
 
 export let areaIndex = 0;
@@ -112,6 +112,45 @@ export function enterArea(index) {
   BUSHES = AREAS[index].bushes;
   BUILDINGS = AREAS[index].buildings;
   TREES = AREAS[index].trees;
+}
+
+export function areaList() {
+  return AREAS;
+}
+
+const START_TERRAIN = AREAS.map((area) => ({
+  map: area.map.slice(),
+  bushes: area.bushes.slice(),
+}));
+
+export function resetTerrain() {
+  START_TERRAIN.forEach((area, index) => {
+    area.map.forEach((row, y) => { AREAS[index].map[y] = row; });
+    area.bushes.forEach((row, y) => { AREAS[index].bushes[y] = row; });
+  });
+  enterArea(0);
+}
+
+function validRows(rows, alphabet) {
+  if (!Array.isArray(rows) || rows.length !== ROWS) return false;
+  return rows.every((row) => (
+    typeof row === "string" &&
+    row.length === COLS &&
+    [...row].every((ch) => alphabet.includes(ch))
+  ));
+}
+
+export function applySavedTerrain(saved) {
+  if (!Array.isArray(saved) || saved.length !== AREAS.length) return false;
+  for (const area of saved) {
+    if (!validRows(area?.map, "wgsp") || !validRows(area?.bushes, ".b1234")) return false;
+  }
+  saved.forEach((area, index) => {
+    area.map.forEach((row, y) => { AREAS[index].map[y] = row; });
+    area.bushes.forEach((row, y) => { AREAS[index].bushes[y] = row; });
+  });
+  enterArea(areaIndex);
+  return true;
 }
 
 const BUSH_MARKS = "b1234";

@@ -1,7 +1,7 @@
-import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=36";
-import { player } from "./player.js?v=36";
-import { blockedCell } from "./collision.js?v=36";
-import { areaIndex } from "./world.js?v=36";
+import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=40";
+import { player } from "./player.js?v=40";
+import { blockedCell } from "./collision.js?v=40";
+import { areaIndex } from "./world.js?v=40";
 
 const STEP_DIRS = [
   [0, -1, "up"],
@@ -39,6 +39,25 @@ export const NPCS = [
     line: "The stones under the square have started to hum. I have not heard that since the old gate was sealed. The town is remembering something it was meant to forget.",
   },
 ];
+
+const NPC_START = NPCS.map((npc) => ({
+  name: npc.name,
+  x: npc.x,
+  y: npc.y,
+  facing: npc.facing,
+  wait: npc.wait,
+}));
+
+export function resetNpcs() {
+  for (const start of NPC_START) {
+    const npc = NPCS.find((entry) => entry.name === start.name);
+    npc.x = start.x;
+    npc.y = start.y;
+    npc.facing = start.facing;
+    npc.wait = start.wait;
+    npc.dead = false;
+  }
+}
 
 export function npcInFront() {
   if (areaIndex !== 0) return undefined;

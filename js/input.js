@@ -1,6 +1,7 @@
-import { npcInFront } from "./npcs.js?v=36";
-import { dialogueIsOpen, handleSpace } from "./dialogue.js?v=36";
-import { dropItem, heldItem, itemInReach, pickupItem, startScoop, startThrust } from "./items.js?v=36";
+import { npcInFront } from "./npcs.js?v=40";
+import { dialogueIsOpen, handleSpace } from "./dialogue.js?v=40";
+import { dropItem, heldItem, itemInReach, pickupItem, startScoop, startThrust } from "./items.js?v=40";
+import { backMenu, closeMenu, menuIsOpen, moveMenu, openMenu, selectMenu } from "./menu.js?v=40";
 
 export let showGrid = false;
 
@@ -37,6 +38,13 @@ export function heldDirection() {
 window.addEventListener("keydown", (event) => {
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
 
+  if (menuIsOpen() && KEY_DIRS[key]) {
+    event.preventDefault();
+    const dy = KEY_DIRS[key][1];
+    if (dy !== 0) moveMenu(dy);
+    return;
+  }
+
   if (KEY_DIRS[key]) {
     event.preventDefault();
     if (!event.repeat && !dialogueIsOpen()) holdDirection(key);
@@ -45,8 +53,19 @@ window.addEventListener("keydown", (event) => {
 
   if (event.repeat) return;
 
+  if (key === "Enter") {
+    event.preventDefault();
+    if (menuIsOpen()) closeMenu();
+    else if (!dialogueIsOpen()) openMenu();
+    return;
+  }
+
   if (key === " " || key === "z") {
     event.preventDefault();
+    if (menuIsOpen()) {
+      selectMenu();
+      return;
+    }
     if (dialogueIsOpen()) {
       handleSpace();
       return;
@@ -74,6 +93,10 @@ window.addEventListener("keydown", (event) => {
 
   if (key === "x") {
     event.preventDefault();
+    if (menuIsOpen()) {
+      backMenu();
+      return;
+    }
     if (!dialogueIsOpen()) dropItem();
     return;
   }

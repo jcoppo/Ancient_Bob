@@ -1,6 +1,6 @@
-import { CELL } from "./config.js?v=36";
-import { player } from "./player.js?v=36";
-import { areaIndex, cutBush, tillGrass } from "./world.js?v=36";
+import { CELL } from "./config.js?v=40";
+import { player } from "./player.js?v=40";
+import { areaIndex, cutBush, tillGrass } from "./world.js?v=40";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
@@ -152,4 +152,25 @@ export function hoePose() {
   const facing = scoop.frame < 0 ? player.facing : scoop.facing;
   const t = scoop.frame < 0 ? 0 : Math.sin(((scoop.frame + 0.5) / SCOOP_FRAMES) * Math.PI);
   return { facing, frame: scoop.frame, t };
+}
+
+const ITEM_START = items.map((item) => ({
+  kind: item.kind,
+  area: item.area,
+  x: item.x,
+  y: item.y,
+}));
+
+export function resetItems() {
+  for (const start of ITEM_START) {
+    const item = items.find((entry) => entry.kind === start.kind);
+    item.area = start.area;
+    item.x = start.x;
+    item.y = start.y;
+    item.held = false;
+  }
+  player.holding = null;
+  thrust.frame = -1;
+  scoop.frame = -1;
+  leaves.length = 0;
 }
