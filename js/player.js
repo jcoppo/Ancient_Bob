@@ -1,10 +1,10 @@
-import { CELL, COLS, ROWS } from "./config.js";
+import { CELL } from "./config.js?v=6";
 
 const SLIDE = 2;
 
 export const player = {
-  x: Math.floor(COLS / 2) - 1,
-  y: Math.floor(ROWS / 2) - 1,
+  x: 7,
+  y: 9,
   facing: "down",
   dx: 0,
   dy: 0,

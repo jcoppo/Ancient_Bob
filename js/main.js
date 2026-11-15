@@ -1,12 +1,12 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js";
-import { NPCS, updateNpcs } from "./npcs.js";
-import { player, updatePlayer } from "./player.js";
-import { blockedCell } from "./collision.js";
-import { dialogueIsOpen } from "./dialogue.js";
-import { areaIndex, crossingBlocked, enterArea } from "./world.js";
-import { heldDirection } from "./input.js?v=5";
-import { updateThrust } from "./items.js";
-import { render } from "./render.js?v=5";
+import { COLS, FRAME_MS, ROWS } from "./config.js?v=6";
+import { NPCS, updateNpcs } from "./npcs.js?v=6";
+import { player, updatePlayer } from "./player.js?v=6";
+import { blockedCell } from "./collision.js?v=6";
+import { dialogueIsOpen } from "./dialogue.js?v=6";
+import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=6";
+import { heldDirection } from "./input.js?v=6";
+import { updateThrust } from "./items.js?v=6";
+import { render } from "./render.js?v=6";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;

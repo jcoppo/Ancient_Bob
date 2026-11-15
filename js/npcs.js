@@ -1,7 +1,7 @@
-import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js";
-import { player } from "./player.js";
-import { blockedCell } from "./collision.js";
-import { areaIndex } from "./world.js";
+import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=6";
+import { player } from "./player.js?v=6";
+import { blockedCell } from "./collision.js?v=6";
+import { areaIndex } from "./world.js?v=6";
 
 const STEP_DIRS = [
   [0, -1, "up"],
@@ -13,8 +13,8 @@ const STEP_DIRS = [
 export const NPCS = [
   {
     name: "Bram",
-    x: 19,
-    y: 8,
+    x: 15,
+    y: 6,
     facing: "down",
     palette: MAN_PALETTE,
     wait: 80,
@@ -22,8 +22,8 @@ export const NPCS = [
   },
   {
     name: "Lila",
-    x: 16,
-    y: 18,
+    x: 12,
+    y: 16,
     facing: "left",
     palette: WOMAN_PALETTE,
     wait: 140,
@@ -31,8 +31,8 @@ export const NPCS = [
   },
   {
     name: "Elder Otis",
-    x: 8,
-    y: 18,
+    x: 4,
+    y: 16,
     facing: "right",
     palette: OLD_MAN_PALETTE,
     wait: 200,
