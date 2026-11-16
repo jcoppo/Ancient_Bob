@@ -1,9 +1,9 @@
-import { player } from "./player.js?v=67";
-import { giveBread, heldItem, loafCanvas, takeHeldWheat } from "./items.js?v=67";
+import { player } from "./player.js?v=72";
+import { giveBread, heldItem, loafCanvas, takeHeldWheat } from "./items.js?v=72";
 
 const BAKER_INTRO = "Hi, I am the baker. Here is a loaf! If you want more, bring me some wheat.";
 const BAKER_AGAIN = "Bring me wheat, and I will bake you another loaf.";
-const BAKER_TRADE = "If you want, I will trade that wheat for a bread loaf.";
+const BAKER_TRADE = "Trade that wheat for a bread loaf?";
 const BREAD_NOTICE = "You received a bread loaf";
 const TRADE_CHOICES = ["Yes", "No"];
 const FARMER_INTRO = "Careful where you step. I just finished telling that clod of dirt it was doing a fine job, and it gets shy around strangers. I am the farmer. Hold the hoe, stand on grass, and press Z. The grass turns to soil. Hold the bag of wheat seeds, stand on that soil, and press Z. Down go the seeds, and the wheat starts to grow. Wait until the wheat is fully grown. Then harvest it. Pull it early and all you get is a green mistake.";
@@ -193,10 +193,10 @@ function renderChoices() {
   dialogueLine.append(ask);
   TRADE_CHOICES.forEach((label, option) => {
     const row = document.createElement("span");
-    row.style.display = "block";
+    row.className = "dialogue-choice";
     const mark = document.createElement("span");
     mark.className = "dialogue-caret";
-    mark.textContent = option === choiceIndex ? "> " : "  ";
+    mark.textContent = option === choiceIndex ? ">" : "";
     row.append(mark, document.createTextNode(label));
     dialogueLine.append(row);
   });
@@ -317,7 +317,7 @@ function showNotice() {
   pageShownEnd = dialogueFull.length;
   pageLimit = dialogueFull.length;
   showPage(dialogueFull.length, false);
-  dialogueLine.prepend(loafCanvas());
+  dialogueLine.append(loafCanvas());
 }
 
 function closeDialogue() {

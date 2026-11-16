@@ -164,7 +164,6 @@ canvas {
 #menu-body .menu-loaf,
 #menu-body .menu-coin,
 #dialogue-line .menu-loaf {
-  display: block;
   flex: none;
   width: 28px;
   height: 14px;
@@ -176,12 +175,19 @@ canvas {
   image-rendering: crisp-edges;
 }
 
+#menu-body .menu-loaf,
+#menu-body .menu-coin {
+  display: block;
+}
+
 #menu-body .menu-coin {
   width: 20px;
 }
 
 #dialogue-line .menu-loaf {
-  margin-right: 6px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
 }
 
 .map-names {
@@ -255,6 +261,18 @@ canvas {
   overflow: hidden;
   font-size: 18px;
   line-height: 1.5;
+}
+
+#dialogue-line .dialogue-choice {
+  display: flex;
+  align-items: center;
+}
+
+#dialogue-line .dialogue-choice .dialogue-caret {
+  display: inline-flex;
+  flex: none;
+  width: 1.1em;
+  color: #e6c15a;
 }
 
 #dialogue-line .dialogue-caret {

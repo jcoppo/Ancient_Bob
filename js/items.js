@@ -1,7 +1,7 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=67";
-import { WHEAT_SPRITES } from "./pixels.js?v=67";
-import { player } from "./player.js?v=67";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=67";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=72";
+import { WHEAT_SPRITES } from "./pixels.js?v=72";
+import { player } from "./player.js?v=72";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=72";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
@@ -294,6 +294,7 @@ function wheatAt(x, y) {
 }
 
 export function destroyYoungWheat() {
+  if (heldItem()) return false;
   if (MAP[player.y]?.[player.x] !== "s") return false;
   const index = wheatAt(player.x, player.y);
   if (index < 0 || crops[index].stage >= WHEAT_SPRITES.length - 1) return false;

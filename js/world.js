@@ -1,5 +1,5 @@
-import { CELL, COLS, ROWS } from "./config.js?v=67";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=67";
+import { CELL, COLS, ROWS } from "./config.js?v=72";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=72";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -257,16 +257,12 @@ export function buildingRoofPixels(building) {
 }
 
 function hitsWall(buildings, x, y) {
-  return buildings.some((building) => {
-    const chimney = building.kind === "baker" && x === building.x && y >= building.y - 1 && y < building.y + building.h;
-    if (chimney) return true;
-    return (
-      x >= building.x &&
-      x < building.x + building.w &&
-      y >= building.y + Math.floor(buildingRoofPixels(building) / CELL) &&
-      y < building.y + building.h
-    );
-  });
+  return buildings.some((building) => (
+    x >= building.x &&
+    x < building.x + building.w &&
+    y >= building.y + Math.floor(buildingRoofPixels(building) / CELL) &&
+    y < building.y + building.h
+  ));
 }
 
 export function buildingAt(x, y) {
