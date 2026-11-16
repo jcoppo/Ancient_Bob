@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=75";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=75";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=75";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=75";
-import { player } from "./player.js?v=75";
-import { NPCS } from "./npcs.js?v=75";
-import { barbarian } from "./enemies.js?v=75";
-import { showGrid } from "./input.js?v=75";
+import { CELL, COLS, ROWS } from "./config.js?v=77";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=77";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=77";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=77";
+import { player } from "./player.js?v=77";
+import { NPCS } from "./npcs.js?v=77";
+import { barbarian } from "./enemies.js?v=77";
+import { showGrid } from "./input.js?v=77";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
