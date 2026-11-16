@@ -1,8 +1,8 @@
-import { COLS, ROWS } from "./config.js?v=72";
-import { healPlayer, player, resetPlayer } from "./player.js?v=72";
-import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=72";
-import { NPCS, resetNpcs } from "./npcs.js?v=72";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=72";
+import { COLS, ROWS } from "./config.js?v=75";
+import { healPlayer, player, resetPlayer } from "./player.js?v=75";
+import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=75";
+import { NPCS, resetNpcs } from "./npcs.js?v=75";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=75";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
@@ -17,6 +17,7 @@ const COLORS = {
   p: "#5a5854",
   s: "#6b4630",
   w: "#2f7ea0",
+  r: "#8e8c88",
   bush: "#2a4a22",
   building: "#8a3c2c",
   tree: "#4a3022",
@@ -329,40 +330,53 @@ export function paintMenu() {
   });
 }
 
+const MAP_LABEL = 16;
+
+function mapSpan(areas) {
+  const cols = Math.max(...areas.map((area) => area.col)) + 1;
+  const rows = Math.max(...areas.map((area) => area.row)) + 1;
+  const blockW = COLS * CELL_PX;
+  const blockH = MAP_LABEL + ROWS * CELL_PX;
+  return {
+    cols,
+    rows,
+    blockW,
+    blockH,
+    width: cols * blockW + (cols - 1) * MAP_GAP,
+    height: rows * blockH + (rows - 1) * MAP_GAP,
+  };
+}
+
 function buildMap() {
   painted = "map";
   menuTitle.textContent = "Map";
   menuBody.replaceChildren();
-  const names = document.createElement("div");
-  names.className = "map-names";
-  for (const area of areaList()) {
-    const name = document.createElement("span");
-    name.className = "map-name";
-    name.textContent = area.name;
-    names.appendChild(name);
-  }
   const canvas = document.createElement("canvas");
-  const areas = areaList();
-  canvas.width = areas.length * COLS * CELL_PX + (areas.length - 1) * MAP_GAP;
-  canvas.height = ROWS * CELL_PX;
-  menuBody.append(names, canvas);
+  const span = mapSpan(areaList());
+  canvas.width = span.width;
+  canvas.height = span.height;
+  menuBody.append(canvas);
 }
 
 function drawMap() {
   const canvas = menuBody.querySelector("canvas");
   const ctx = canvas.getContext("2d");
+  const span = mapSpan(areaList());
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "12px Courier New";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
   areaList().forEach((area, areaNumber) => {
-    const ox = areaNumber * (COLS * CELL_PX + MAP_GAP);
+    const ox = area.col * (span.blockW + MAP_GAP);
+    const oy = area.row * (span.blockH + MAP_GAP);
+    ctx.fillStyle = areaNumber === areaIndex ? "#e6c15a" : "#a89880";
+    ctx.fillText(area.name.toUpperCase(), ox + span.blockW / 2, oy + MAP_LABEL / 2);
     for (let y = 0; y < ROWS; y++) {
       for (let x = 0; x < COLS; x++) {
         ctx.fillStyle = cellColor(area, areaNumber, x, y);
-        ctx.fillRect(ox + x * CELL_PX, y * CELL_PX, CELL_PX, CELL_PX);
+        ctx.fillRect(ox + x * CELL_PX, oy + MAP_LABEL + y * CELL_PX, CELL_PX, CELL_PX);
       }
     }
-  });
-  menuBody.querySelectorAll(".map-name").forEach((name, areaNumber) => {
-    name.classList.toggle("here", areaNumber === areaIndex);
   });
 }
 

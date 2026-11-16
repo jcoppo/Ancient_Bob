@@ -1,31 +1,32 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js?v=72";
-import { NPCS, updateNpcs } from "./npcs.js?v=72";
-import { updateBarbarian } from "./enemies.js?v=72";
-import { player, updatePlayer } from "./player.js?v=72";
-import { blockedCell } from "./collision.js?v=72";
-import { dialogueIsOpen } from "./dialogue.js?v=72";
-import { areaIndex, crossingBlocked, enterArea } from "./world.js?v=72";
-import { heldDirection } from "./input.js?v=72";
-import { updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js?v=72";
-import { loadGame, paintMenu } from "./menu.js?v=72";
-import { render, updateSmoke } from "./render.js?v=72";
+import { COLS, FRAME_MS, ROWS } from "./config.js?v=75";
+import { NPCS, updateNpcs } from "./npcs.js?v=75";
+import { updateBarbarian } from "./enemies.js?v=75";
+import { player, updatePlayer } from "./player.js?v=75";
+import { blockedCell } from "./collision.js?v=75";
+import { dialogueIsOpen } from "./dialogue.js?v=75";
+import { areaNeighbor, crossingBlocked, enterArea } from "./world.js?v=75";
+import { heldDirection } from "./input.js?v=75";
+import { updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js?v=75";
+import { loadGame, paintMenu } from "./menu.js?v=75";
+import { render, updateSmoke } from "./render.js?v=75";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;
   const ny = player.y + dy;
-  if (ny < 0 || ny >= ROWS) return false;
-  if (nx < 0 || nx >= COLS) {
-    const next = nx < 0 ? areaIndex - 1 : areaIndex + 1;
-    const destX = nx < 0 ? COLS - 1 : 0;
-    if (crossingBlocked(next, destX, ny, NPCS)) return false;
-    enterArea(next);
-    player.x = destX;
-    player.y = ny;
-    player.wrap = true;
-    return true;
+  if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS) {
+    player.wrap = false;
+    return !blockedCell(nx, ny, player, NPCS);
   }
-  player.wrap = false;
-  return !blockedCell(nx, ny, player, NPCS);
+  const next = areaNeighbor(dx, dy);
+  if (next == null) return false;
+  const destX = nx < 0 ? COLS - 1 : nx >= COLS ? 0 : nx;
+  const destY = ny < 0 ? ROWS - 1 : ny >= ROWS ? 0 : ny;
+  if (crossingBlocked(next, destX, destY, NPCS)) return false;
+  enterArea(next);
+  player.x = destX;
+  player.y = destY;
+  player.wrap = true;
+  return true;
 }
 
 function update() {

@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=72";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=72";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=72";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=72";
-import { player } from "./player.js?v=72";
-import { NPCS } from "./npcs.js?v=72";
-import { barbarian } from "./enemies.js?v=72";
-import { showGrid } from "./input.js?v=72";
+import { CELL, COLS, ROWS } from "./config.js?v=75";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=75";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=75";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=75";
+import { player } from "./player.js?v=75";
+import { NPCS } from "./npcs.js?v=75";
+import { barbarian } from "./enemies.js?v=75";
+import { showGrid } from "./input.js?v=75";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -249,10 +249,26 @@ function drawBuildings(part) {
   }
 }
 
+function drawRock(gridX, gridY) {
+  const ox = gridX * CELL;
+  const oy = gridY * CELL;
+  for (let y = 0; y < CELL; y++) {
+    const row = ROCK_PIXELS[y];
+    for (let x = 0; x < CELL; x++) {
+      ctx.fillStyle = row[x];
+      ctx.fillRect(ox + x, oy + y, 1, 1);
+    }
+  }
+}
+
 function drawGround() {
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       const mark = MAP[y][x];
+      if (mark === "r") {
+        drawRock(x, y);
+        continue;
+      }
       const ground = mark === "w" ? WATER_TILE : mark === "p" ? PATH_TILE : mark === "s" ? SOIL_TILE : GRASS_TILE;
       drawTile(ground, x, y);
     }

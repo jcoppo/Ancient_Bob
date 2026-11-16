@@ -1,5 +1,5 @@
-import { CELL, COLS, ROWS } from "./config.js?v=72";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=72";
+import { CELL, COLS, ROWS } from "./config.js?v=75";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=75";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -125,10 +125,53 @@ const MEADOW_TREES = [
   { kind: "round", x: 14, y: 13 },
 ];
 
-const AREAS = [
-  { name: "Village", map: VILLAGE_MAP, bushes: VILLAGE_BUSHES, buildings: VILLAGE_BUILDINGS, trees: VILLAGE_TREES },
-  { name: "Meadow", map: MEADOW_MAP, bushes: MEADOW_BUSHES, buildings: [], trees: MEADOW_TREES },
+// North of the village. The bottom row matches the village shore: four water tiles, then grass.
+const RIDGE_MAP = [
+  "wwwwrrrrggggrrgggrrr",
+  "wwwwrrrgggggrrgggrrg",
+  "wwwwrrgggggggrggggrr",
+  "wwwwgggggggggggggggg",
+  "wwwwggggrrrrgggggggg",
+  "wwwwgggrrrrrrggggggr",
+  "wwwwgggrrrrggggggggr",
+  "wwwwgggggrrggggggggr",
+  "wwwwggggggggggggggrr",
+  "wwwwgggggggggggggggr",
+  "wwwwgggrrrgggggggggg",
+  "wwwwggrrrrrrgggggggg",
+  "wwwwggrrrrrrgggrrrgg",
+  "wwwwgggrrrgggggrrrgg",
+  "wwwwgggggggggggrrggg",
+  "wwwwgggggggggggggggg",
+  "wwwwrrgggggggggggrrr",
+  "wwwwrrrggggggggggrrr",
+  "wwwwrrggggggggggggrr",
+  "wwwwgggggggggggggggg",
 ];
+
+const RIDGE_BUSHES = Array.from({ length: 20 }, () => "....................");
+
+const AREAS = [
+  { name: "Village", col: 0, row: 1, map: VILLAGE_MAP, bushes: VILLAGE_BUSHES, buildings: VILLAGE_BUILDINGS, trees: VILLAGE_TREES },
+  { name: "Meadow", col: 1, row: 1, map: MEADOW_MAP, bushes: MEADOW_BUSHES, buildings: [], trees: MEADOW_TREES },
+  { name: "Ridge", col: 0, row: 0, map: RIDGE_MAP, bushes: RIDGE_BUSHES, buildings: [], trees: [] },
+];
+
+const AREA_LINKS = [
+  { east: 1, north: 2 },
+  { west: 0 },
+  { south: 0 },
+];
+
+export function areaNeighbor(dx, dy) {
+  const link = AREA_LINKS[areaIndex];
+  if (!link) return null;
+  if (dx < 0) return link.west ?? null;
+  if (dx > 0) return link.east ?? null;
+  if (dy < 0) return link.north ?? null;
+  if (dy > 0) return link.south ?? null;
+  return null;
+}
 
 export let areaIndex = 0;
 export let MAP = AREAS[0].map;
@@ -171,9 +214,9 @@ function validRows(rows, alphabet) {
 }
 
 export function applySavedTerrain(saved) {
-  if (!Array.isArray(saved) || saved.length !== AREAS.length) return false;
+  if (!Array.isArray(saved) || saved.length === 0 || saved.length > AREAS.length) return false;
   for (const area of saved) {
-    if (!validRows(area?.map, "wgsp") || !validRows(area?.bushes, ".b1234")) return false;
+    if (!validRows(area?.map, "wgspr") || !validRows(area?.bushes, ".b1234")) return false;
   }
   saved.forEach((area, index) => {
     area.map.forEach((row, y) => { AREAS[index].map[y] = row; });
@@ -277,7 +320,7 @@ function areaAt(index) {
 export function crossingBlocked(nextIndex, x, y, npcs) {
   const area = areaAt(nextIndex);
   if (!area) return true;
-  if (area.map[y][x] === "w" || BUSH_MARKS.includes(area.bushes[y][x])) return true;
+  if (area.map[y][x] === "w" || area.map[y][x] === "r" || BUSH_MARKS.includes(area.bushes[y][x])) return true;
   if (area.trees.some((tree) => trunkHits(tree, x, y))) return true;
   if (hitsWall(area.buildings, x, y)) return true;
   if (npcs.some((npc) => (npc.area ?? 0) === nextIndex && npc.x === x && npc.y === y)) return true;
