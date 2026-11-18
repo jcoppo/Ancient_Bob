@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=77";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=77";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=77";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=77";
-import { player } from "./player.js?v=77";
-import { NPCS } from "./npcs.js?v=77";
-import { barbarian } from "./enemies.js?v=77";
-import { showGrid } from "./input.js?v=77";
+import { CELL, COLS, ROWS } from "./config.js?v=87";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=87";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=87";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=87";
+import { player } from "./player.js?v=87";
+import { NPCS } from "./npcs.js?v=87";
+import { barbarian } from "./enemies.js?v=87";
+import { showGrid } from "./input.js?v=87";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -275,10 +275,31 @@ function drawGround() {
   }
 }
 
+function drawWheatPhase(pixels, gridX, gridY) {
+  const ox = gridX * CELL;
+  const oy = (gridY + 1) * CELL - pixels.length;
+  for (let y = 0; y < pixels.length; y++) {
+    const row = pixels[y];
+    for (let x = 0; x < row.length; x++) {
+      const color = row[x];
+      if (!color) continue;
+      ctx.fillStyle = color;
+      ctx.fillRect(ox + x, oy + y, 1, 1);
+    }
+  }
+}
+
 function drawCrops() {
   const here = crops.filter((crop) => crop.area === areaIndex).sort((a, b) => a.y - b.y);
+  const last = WHEAT_GROWTH_PIXELS.length - 1;
   for (const crop of here) {
-    const sprite = WHEAT_SPRITES[Math.min(crop.stage, WHEAT_SPRITES.length - 1)];
+    const stage = Math.min(crop.stage, last);
+    const phase = WHEAT_GROWTH_PIXELS[stage];
+    if (phase) {
+      drawWheatPhase(phase, crop.x, crop.y);
+      continue;
+    }
+    const sprite = WHEAT_SPRITES[stage];
     if (!sprite) continue;
     const ox = crop.x * CELL + Math.floor((CELL - sprite[0].length) / 2);
     drawSprite(sprite, WHEAT_PALETTE, ox, (crop.y + 1) * CELL - sprite.length, false);
@@ -543,7 +564,7 @@ function drawSlash(worldX, worldY, facing, frame) {
 function drawNpc(npc) {
   const x = npc.x * CELL;
   const y = npc.y * CELL;
-  const hoe = npc.tool === "hoe" ? { facing: npc.facing, t: 0 } : null;
+  const hoe = npc.tool === "hoe" ? { facing: npc.facing, t: npc.hoe || 0 } : null;
   if (hoe && npc.facing === "up") drawHeldHoe(x, y, hoe);
   drawCharacter(npc, npc.palette);
   if (hoe && npc.facing !== "up") drawHeldHoe(x, y, hoe);

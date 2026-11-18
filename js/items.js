@@ -1,7 +1,7 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=77";
-import { WHEAT_SPRITES } from "./pixels.js?v=77";
-import { player } from "./player.js?v=77";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=77";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=87";
+import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=87";
+import { player } from "./player.js?v=87";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=87";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
@@ -248,7 +248,7 @@ function plantWheat(x, y) {
 }
 
 export function updateCrops() {
-  const last = WHEAT_SPRITES.length - 1;
+  const last = WHEAT_GROWTH_PIXELS.length - 1;
   for (const crop of crops) {
     if (crop.stage > last) crop.stage = last;
     if (crop.stage >= last) continue;
@@ -272,7 +272,7 @@ export function cropSnapshot() {
 export function applyCrops(saved) {
   crops.length = 0;
   if (!Array.isArray(saved)) return;
-  const last = WHEAT_SPRITES.length - 1;
+  const last = WHEAT_GROWTH_PIXELS.length - 1;
   for (const crop of saved) {
     if (!Number.isInteger(crop?.area) || crop.area < 0 || crop.area >= areaList().length) continue;
     if (!Number.isInteger(crop.x) || crop.x < 0 || crop.x >= COLS) continue;
@@ -297,7 +297,7 @@ export function destroyYoungWheat() {
   if (heldItem()) return false;
   if (MAP[player.y]?.[player.x] !== "s") return false;
   const index = wheatAt(player.x, player.y);
-  if (index < 0 || crops[index].stage >= WHEAT_SPRITES.length - 1) return false;
+  if (index < 0 || crops[index].stage >= WHEAT_GROWTH_PIXELS.length - 1) return false;
   crops.splice(index, 1);
   burstLeaves(player.x, player.y);
   return true;
@@ -307,7 +307,7 @@ export function harvestWheat() {
   if (heldItem()) return false;
   if (MAP[player.y]?.[player.x] !== "s") return false;
   const index = wheatAt(player.x, player.y);
-  if (index < 0 || crops[index].stage < WHEAT_SPRITES.length - 1) return false;
+  if (index < 0 || crops[index].stage < WHEAT_GROWTH_PIXELS.length - 1) return false;
   crops.splice(index, 1);
   items.push({ kind: "wheat", area: areaIndex, x: player.x, y: player.y, held: true });
   player.holding = "wheat";

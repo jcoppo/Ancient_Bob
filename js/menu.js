@@ -1,8 +1,8 @@
-import { COLS, ROWS } from "./config.js?v=77";
-import { healPlayer, player, resetPlayer } from "./player.js?v=77";
-import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=77";
-import { NPCS, resetNpcs } from "./npcs.js?v=77";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=77";
+import { COLS, ROWS } from "./config.js?v=87";
+import { healPlayer, player, resetPlayer } from "./player.js?v=87";
+import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=87";
+import { NPCS, resetNpcs } from "./npcs.js?v=87";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=87";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
@@ -487,8 +487,14 @@ export function loadGame() {
     const npc = NPCS.find((entry) => entry.name === saved?.name);
     if (!npc || !cellNumber(saved.x) || !cellNumber(saved.y)) continue;
     if (!FACINGS.includes(saved.facing)) continue;
-    npc.x = saved.x;
-    npc.y = npc.name === "Farmer" && saved.y === 9 ? npc.homeY : saved.y;
+    const oldPlot = npc.name === "Farmer" && (saved.y === 9 || (saved.x === 6 && saved.y === 11));
+    npc.x = oldPlot ? 10 : saved.x;
+    npc.y = oldPlot ? 12 : saved.y;
+    if (npc.name === "Farmer") {
+      npc.route = -1;
+      npc.till = 0;
+      npc.hoe = 0;
+    }
     npc.facing = saved.facing;
     npc.dead = !!saved.dead;
     npc.met = !!saved.met;

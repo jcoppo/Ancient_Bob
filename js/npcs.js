@@ -1,7 +1,7 @@
-import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=77";
-import { player } from "./player.js?v=77";
-import { blockedCell } from "./collision.js?v=77";
-import { areaIndex } from "./world.js?v=77";
+import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=87";
+import { player } from "./player.js?v=87";
+import { blockedCell } from "./collision.js?v=87";
+import { MAP, areaIndex, tillGrass } from "./world.js?v=87";
 
 function hat(sprite, rows) {
   return rows.concat(sprite.slice(rows.length));
@@ -72,16 +72,17 @@ export const NPCS = [
   {
     name: "Farmer",
     area: 1,
-    x: 6,
-    y: 11,
-    homeX: 6,
-    homeY: 11,
-    facing: "down",
+    x: 10,
+    y: 12,
+    facing: "left",
     palette: FARMER_PALETTE,
     sprites: FARMER_SPRITES,
     holding: "hoe",
     tool: "hoe",
-    wait: 160,
+    wait: 40,
+    till: 0,
+    hoe: 0,
+    route: 0,
     met: false,
   },
 ];
@@ -103,6 +104,9 @@ export function resetNpcs() {
     npc.wait = start.wait;
     npc.dead = false;
     npc.met = false;
+    npc.till = 0;
+    npc.hoe = 0;
+    if (npc.name === "Farmer") npc.route = 0;
   }
 }
 
@@ -111,6 +115,104 @@ export function npcInFront() {
   const x = player.x + offset[0];
   const y = player.y + offset[1];
   return NPCS.find((npc) => !npc.dead && (npc.area ?? 0) === areaIndex && npc.x === x && npc.y === y);
+}
+
+// New rows under the meadow plot. Bushes at (7, 13) and (9, 14) stay grass, so he steps around them.
+const FARM_ROUTE = [
+  { x: 9, y: 13, till: true },
+  { x: 8, y: 13, till: true },
+  { x: 8, y: 12 },
+  { x: 6, y: 12 },
+  { x: 6, y: 13, till: true },
+  { x: 5, y: 13, till: true },
+  { x: 4, y: 13, till: true },
+  { x: 3, y: 13, till: true },
+  { x: 3, y: 14, till: true },
+  { x: 4, y: 14, till: true },
+  { x: 5, y: 14, till: true },
+  { x: 6, y: 14, till: true },
+  { x: 7, y: 14, till: true },
+  { x: 8, y: 14, till: true },
+  { x: 8, y: 15, till: true },
+  { x: 9, y: 15, till: true },
+  { x: 7, y: 15, till: true },
+  { x: 6, y: 15, till: true },
+  { x: 5, y: 15, till: true },
+  { x: 4, y: 15, till: true },
+  { x: 3, y: 15, till: true },
+  { x: 10, y: 12 },
+];
+
+const FARM_TILL = 6;
+const FARM_STEP = 8;
+const FARM_GAP = 10;
+
+function farmStep(npc, tx, ty) {
+  const dx = Math.sign(tx - npc.x);
+  const dy = Math.sign(ty - npc.y);
+  const options = [];
+  if (dx && Math.abs(tx - npc.x) >= Math.abs(ty - npc.y)) options.push([dx, 0]);
+  if (dy) options.push([0, dy]);
+  if (dx && Math.abs(tx - npc.x) < Math.abs(ty - npc.y)) options.push([dx, 0]);
+  for (const [sx, sy] of options) {
+    if (!blockedCell(npc.x + sx, npc.y + sy, player, NPCS, npc)) return [sx, sy];
+  }
+  return null;
+}
+
+function faceStep(dx, dy) {
+  if (dx < 0) return "left";
+  if (dx > 0) return "right";
+  if (dy < 0) return "up";
+  return "down";
+}
+
+function updateFarmer(npc) {
+  if (npc.till > 0) {
+    npc.till -= 1;
+    npc.facing = "down";
+    const frame = FARM_TILL - npc.till - 1;
+    npc.hoe = Math.sin(((frame + 0.5) / FARM_TILL) * Math.PI);
+    if (npc.till === 0) npc.wait = FARM_GAP;
+    return;
+  }
+  npc.hoe = 0;
+  if (npc.route < 0) {
+    const nextGrass = FARM_ROUTE.findIndex((cell) => cell.till && MAP[cell.y][cell.x] === "g");
+    npc.route = nextGrass >= 0 ? nextGrass : FARM_ROUTE.length;
+  }
+  if (npc.route >= FARM_ROUTE.length) {
+    npc.facing = "left";
+    return;
+  }
+  npc.wait -= 1;
+  if (npc.wait > 0) return;
+
+  const next = FARM_ROUTE[npc.route];
+  if (npc.x === next.x && npc.y === next.y) {
+    npc.route += 1;
+    if (next.till && tillGrass(npc.x, npc.y)) {
+      npc.till = FARM_TILL;
+      npc.facing = "down";
+      return;
+    }
+    if (npc.route >= FARM_ROUTE.length) {
+      npc.facing = "left";
+      return;
+    }
+    npc.wait = 4;
+    return;
+  }
+
+  const step = farmStep(npc, next.x, next.y);
+  if (!step) {
+    npc.wait = 12;
+    return;
+  }
+  npc.x += step[0];
+  npc.y += step[1];
+  npc.facing = faceStep(step[0], step[1]);
+  npc.wait = FARM_STEP;
 }
 
 function updateBaker(npc) {
@@ -130,6 +232,10 @@ function updateBaker(npc) {
 export function updateNpcs() {
   for (const npc of NPCS) {
     if (npc.dead || (npc.area ?? 0) !== areaIndex) continue;
+    if (npc.name === "Farmer") {
+      updateFarmer(npc);
+      continue;
+    }
     if (npc.homeX !== undefined) {
       updateBaker(npc);
       continue;
