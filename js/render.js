@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=96";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=96";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=96";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=96";
-import { player } from "./player.js?v=96";
-import { NPCS } from "./npcs.js?v=96";
-import { barbarian } from "./enemies.js?v=96";
-import { showGrid } from "./input.js?v=96";
+import { CELL, COLS, ROWS } from "./config.js?v=98";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=98";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=98";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=98";
+import { player } from "./player.js?v=98";
+import { NPCS } from "./npcs.js?v=98";
+import { barbarian } from "./enemies.js?v=98";
+import { showGrid } from "./input.js?v=98";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -289,11 +289,12 @@ function drawWheatPhase(pixels, gridX, gridY) {
   }
 }
 
-function drawCrops() {
+function drawCrops(ripeOnly) {
   const here = crops.filter((crop) => crop.area === areaIndex).sort((a, b) => a.y - b.y);
   const last = WHEAT_GROWTH_PIXELS.length - 1;
   for (const crop of here) {
     const stage = Math.min(crop.stage, last);
+    if ((stage === last) !== ripeOnly) continue;
     const phase = WHEAT_GROWTH_PIXELS[stage];
     if (phase) {
       drawWheatPhase(phase, crop.x, crop.y);
@@ -480,7 +481,7 @@ const WHEAT_HOLD = {
 const WHEAT_BUNDLE_WIDTH = 16;
 const WHEAT_BUNDLE_HEIGHT = 22;
 const wheatBundleImage = new Image();
-wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=96", import.meta.url).href;
+wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=98", import.meta.url).href;
 
 function drawWheatBundle(ox, oy) {
   if (!wheatBundleImage.complete || !wheatBundleImage.naturalWidth) return;
@@ -594,7 +595,7 @@ function drawBarbarian() {
 
 export function render() {
   drawGround();
-  drawCrops();
+  drawCrops(false);
   if (showGrid) drawGrid();
   for (const item of groundItems()) {
     if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
@@ -641,6 +642,7 @@ export function render() {
   if (hoe && !hoeBehind) drawHeldHoe(slideX, slideY, hoe);
   if (bag && !bagBehind) drawHeldBag(slideX, slideY, bag);
   if (held?.kind === "wheat" && !wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
+  drawCrops(true);
   drawSeeds();
   drawWater();
   drawBushes();
