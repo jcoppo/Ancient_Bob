@@ -1,7 +1,7 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=87";
-import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=87";
-import { player } from "./player.js?v=87";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=87";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=92";
+import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=92";
+import { player } from "./player.js?v=92";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=92";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },

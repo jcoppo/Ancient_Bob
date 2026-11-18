@@ -1,7 +1,7 @@
-import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=87";
-import { player } from "./player.js?v=87";
-import { blockedCell } from "./collision.js?v=87";
-import { MAP, areaIndex, tillGrass } from "./world.js?v=87";
+import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=92";
+import { player } from "./player.js?v=92";
+import { blockedCell } from "./collision.js?v=92";
+import { MAP, areaIndex, tillGrass } from "./world.js?v=92";
 
 function hat(sprite, rows) {
   return rows.concat(sprite.slice(rows.length));
