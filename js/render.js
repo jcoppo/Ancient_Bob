@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=98";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=98";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=98";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=98";
-import { player } from "./player.js?v=98";
-import { NPCS } from "./npcs.js?v=98";
-import { barbarian } from "./enemies.js?v=98";
-import { showGrid } from "./input.js?v=98";
+import { CELL, COLS, ROWS } from "./config.js?v=106";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=106";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=106";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=106";
+import { player } from "./player.js?v=106";
+import { NPCS } from "./npcs.js?v=106";
+import { barbarian } from "./enemies.js?v=106";
+import { showGrid } from "./input.js?v=106";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -25,45 +25,36 @@ function drawTile(tile, gridX, gridY) {
   }
 }
 
-function drawTrees(part) {
-  const leaves = part === "leaf";
-  for (const tree of TREES) {
-    const sprite = TREE_SPRITES[tree.kind];
-    const scale = TREE_SCALE;
-    const width = sprite[0].length * scale;
-    const height = sprite.length * scale;
-    const ox = tree.x * CELL + Math.floor((CELL - width) / 2);
-    const oy = (tree.y + 1) * CELL - height;
-    for (let y = 0; y < sprite.length; y++) {
-      const row = sprite[y];
-      for (let x = 0; x < row.length; x++) {
-        const ch = row[x];
-        if (ch === ".") continue;
-        const trunk = ch === "t" || ch === "k";
-        if (trunk === leaves) continue;
-        ctx.fillStyle = TREE_PALETTE[ch];
-        ctx.fillRect(ox + x * scale, oy + y * scale, scale, scale);
-      }
+function drawTree(tree) {
+  const sprite = TREE_SPRITES[tree.kind];
+  const scale = TREE_SCALE;
+  const width = sprite[0].length * scale;
+  const height = sprite.length * scale;
+  const ox = tree.x * CELL + Math.floor((CELL - width) / 2);
+  const oy = (tree.y + 1) * CELL - height;
+  for (let y = 0; y < sprite.length; y++) {
+    const row = sprite[y];
+    for (let x = 0; x < row.length; x++) {
+      const ch = row[x];
+      if (ch === ".") continue;
+      ctx.fillStyle = TREE_PALETTE[ch];
+      ctx.fillRect(ox + x * scale, oy + y * scale, scale, scale);
     }
   }
 }
 
-function drawBushes() {
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      const pixels = BUSH_STAGES[BUSHES[y][x]];
-      if (!pixels) continue;
-      const ox = x * CELL;
-      const oy = y * CELL;
-      for (let py = 0; py < CELL; py++) {
-        const row = pixels[py];
-        for (let px = 0; px < CELL; px++) {
-          const color = BUSH[row[px]];
-          if (!color) continue;
-          ctx.fillStyle = color;
-          ctx.fillRect(ox + px, oy + py, 1, 1);
-        }
-      }
+function drawBush(x, y) {
+  const pixels = BUSH_STAGES[BUSHES[y][x]];
+  if (!pixels) return;
+  const ox = x * CELL;
+  const oy = y * CELL;
+  for (let py = 0; py < CELL; py++) {
+    const row = pixels[py];
+    for (let px = 0; px < CELL; px++) {
+      const color = BUSH[row[px]];
+      if (!color) continue;
+      ctx.fillStyle = color;
+      ctx.fillRect(ox + px, oy + py, 1, 1);
     }
   }
 }
@@ -242,11 +233,14 @@ function drawBuilding(building, part) {
   }
 }
 
-function drawBuildings(part) {
-  for (const building of BUILDINGS) {
-    if (building.kind === "baker") drawBaker(building, part);
-    else drawBuilding(building, part);
+function drawSceneBuilding(building) {
+  if (building.kind === "baker") {
+    drawBaker(building, "wall");
+    drawBaker(building, "roof");
+    return;
   }
+  drawBuilding(building, "wall");
+  drawBuilding(building, "roof");
 }
 
 function drawRock(gridX, gridY) {
@@ -289,29 +283,25 @@ function drawWheatPhase(pixels, gridX, gridY) {
   }
 }
 
-function drawCrops(ripeOnly) {
-  const here = crops.filter((crop) => crop.area === areaIndex).sort((a, b) => a.y - b.y);
+function drawCrop(crop) {
   const last = WHEAT_GROWTH_PIXELS.length - 1;
-  for (const crop of here) {
-    const stage = Math.min(crop.stage, last);
-    if ((stage === last) !== ripeOnly) continue;
-    const phase = WHEAT_GROWTH_PIXELS[stage];
-    if (phase) {
-      drawWheatPhase(phase, crop.x, crop.y);
-      continue;
-    }
-    const sprite = WHEAT_SPRITES[stage];
-    if (!sprite) continue;
-    const ox = crop.x * CELL + Math.floor((CELL - sprite[0].length) / 2);
-    drawSprite(sprite, WHEAT_PALETTE, ox, (crop.y + 1) * CELL - sprite.length, false);
+  const stage = Math.min(crop.stage, last);
+  const phase = WHEAT_GROWTH_PIXELS[stage];
+  if (phase) {
+    drawWheatPhase(phase, crop.x, crop.y);
+    return;
   }
+  const sprite = WHEAT_SPRITES[stage];
+  if (!sprite) return;
+  const ox = crop.x * CELL + Math.floor((CELL - sprite[0].length) / 2);
+  drawSprite(sprite, WHEAT_PALETTE, ox, (crop.y + 1) * CELL - sprite.length, false);
 }
 
-function drawWater() {
-  for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
-      if (MAP[y][x] === "w") drawTile(WATER_TILE, x, y);
-    }
+function drawGrowingCrops() {
+  const last = WHEAT_GROWTH_PIXELS.length - 1;
+  const here = crops.filter((crop) => crop.area === areaIndex && crop.stage < last);
+  for (const crop of here) {
+    drawCrop(crop);
   }
 }
 
@@ -440,19 +430,38 @@ function drawSword(ox, oy, facing) {
 }
 
 const HOE_HOLD = {
-  up: [4, 3],
-  down: [5, 3],
-  left: [-3, 3],
-  right: [6, 3],
+  up: [4, 1],
+  down: [5, 1],
+  left: [-3, 1],
+  right: [6, 1],
 };
 
-function drawHoe(ox, oy) {
-  drawSprite(HOE_SPRITE, HOE_PALETTE, ox, oy, false);
+const HOE_WIDTH = 12;
+const HOE_HEIGHT = 14;
+const HOE_PIVOT = [7, 5];
+const HOE_TURN = Math.PI * 0.25;
+const hoeImage = new Image();
+hoeImage.src = new URL("../assets/images/hoe.png?v=106", import.meta.url).href;
+
+function drawHoe(ox, oy, angle = 0) {
+  if (!hoeImage.complete || !hoeImage.naturalWidth) return;
+  if (angle === 0) {
+    ctx.drawImage(hoeImage, ox, oy);
+    return;
+  }
+  const [pivotX, pivotY] = HOE_PIVOT;
+  ctx.save();
+  ctx.translate(ox + pivotX, oy + pivotY);
+  ctx.rotate(angle);
+  ctx.drawImage(hoeImage, -pivotX, -pivotY);
+  ctx.restore();
 }
 
 function drawHeldHoe(slideX, slideY, pose) {
   const [hx, hy] = HOE_HOLD[pose.facing];
-  drawHoe(slideX + hx, slideY + hy + Math.round(4 * pose.t));
+  const direction = pose.facing === "left" || pose.facing === "down" ? 1 : -1;
+  const scoop = pose.returning ? Math.round(3 * pose.t) : 0;
+  drawHoe(slideX + hx, slideY + hy + scoop, direction * HOE_TURN * pose.t);
 }
 
 const BAG_HOLD = {
@@ -481,7 +490,7 @@ const WHEAT_HOLD = {
 const WHEAT_BUNDLE_WIDTH = 16;
 const WHEAT_BUNDLE_HEIGHT = 22;
 const wheatBundleImage = new Image();
-wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=98", import.meta.url).href;
+wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=106", import.meta.url).href;
 
 function drawWheatBundle(ox, oy) {
   if (!wheatBundleImage.complete || !wheatBundleImage.naturalWidth) return;
@@ -571,7 +580,9 @@ function drawSlash(worldX, worldY, facing, frame) {
 function drawNpc(npc) {
   const x = npc.x * CELL;
   const y = npc.y * CELL;
-  const hoe = npc.tool === "hoe" ? { facing: npc.facing, t: npc.hoe || 0 } : null;
+  const hoe = npc.tool === "hoe"
+    ? { facing: npc.facing, t: npc.hoe || 0, returning: !!npc.hoeBack }
+    : null;
   if (hoe && npc.facing === "up") drawHeldHoe(x, y, hoe);
   drawCharacter(npc, npc.palette);
   if (hoe && npc.facing !== "up") drawHeldHoe(x, y, hoe);
@@ -593,30 +604,20 @@ function drawBarbarian() {
   if (!behind) drawHeldSwordAt(x, y, pose);
 }
 
-export function render() {
-  drawGround();
-  drawCrops(false);
-  if (showGrid) drawGrid();
-  for (const item of groundItems()) {
-    if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
-    if (item.kind === "hoe") drawHoe(item.x * CELL, item.y * CELL + CELL - HOE_SPRITE.length);
-    if (item.kind === "bag") drawBag(item.x * CELL, item.y * CELL + CELL - BAG_SPRITE.length);
-    if (item.kind === "wheat") {
-      const ox = item.x * CELL + Math.floor((CELL - WHEAT_BUNDLE_WIDTH) / 2);
-      drawWheatBundle(ox, (item.y + 1) * CELL - WHEAT_BUNDLE_HEIGHT);
-    }
+function drawGroundItem(item) {
+  if (item.kind === "sword") drawSword(item.x * CELL, item.y * CELL, false);
+  if (item.kind === "hoe") {
+    const ox = item.x * CELL + Math.floor((CELL - HOE_WIDTH) / 2);
+    drawHoe(ox, item.y * CELL + CELL - HOE_HEIGHT);
   }
-  for (const npc of NPCS) {
-    if ((npc.area ?? 0) !== areaIndex) continue;
-    if (npc.dead) drawCharacter(npc, npc.palette);
+  if (item.kind === "bag") drawBag(item.x * CELL, item.y * CELL + CELL - BAG_SPRITE.length);
+  if (item.kind === "wheat") {
+    const ox = item.x * CELL + Math.floor((CELL - WHEAT_BUNDLE_WIDTH) / 2);
+    drawWheatBundle(ox, (item.y + 1) * CELL - WHEAT_BUNDLE_HEIGHT);
   }
-  for (const npc of NPCS) {
-    if ((npc.area ?? 0) !== areaIndex || npc.dead) continue;
-    drawNpc(npc);
-  }
-  if (areaIndex === 0) drawBarbarian();
-  const slideX = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
-  const slideY = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
+}
+
+function drawPlayer(slideX, slideY) {
   const held = heldItem();
   const pose = held?.kind === "sword" ? swordPose() : null;
   const swordFacing = pose ? (pose.frame >= 0 ? pose.facing : player.facing) : null;
@@ -632,24 +633,77 @@ export function render() {
   if (wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
   drawCharacter(player, PALETTE, slideX, slideY, player.step > 0 ? player.walk + 1 : 0);
   if (pose && pose.frame >= 0) drawSlash(pose.x, pose.y, pose.facing, pose.frame);
+  if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
+  if (hoe && !hoeBehind) drawHeldHoe(slideX, slideY, hoe);
+  if (bag && !bagBehind) drawHeldBag(slideX, slideY, bag);
+  if (held?.kind === "wheat" && !wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
+}
+
+function drawDepthScene(slideX, slideY) {
+  const entries = [];
+  let order = 0;
+  const add = (depth, priority, draw) => {
+    entries.push({ depth, priority, order, draw });
+    order += 1;
+  };
+
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      if (!BUSH_STAGES[BUSHES[y][x]]) continue;
+      add((y + 1) * CELL, 1, () => drawBush(x, y));
+    }
+  }
+
+  for (const tree of TREES) {
+    add((tree.y + 1) * CELL, 1, () => drawTree(tree));
+  }
+
+  for (const building of BUILDINGS) {
+    add((building.y + building.h) * CELL, 1, () => drawSceneBuilding(building));
+  }
+
+  for (const item of groundItems()) {
+    add((item.y + 1) * CELL, 0, () => drawGroundItem(item));
+  }
+
+  for (const npc of NPCS) {
+    if ((npc.area ?? 0) !== areaIndex) continue;
+    add((npc.y + 1) * CELL, 2, () => {
+      if (npc.dead) drawCharacter(npc, npc.palette);
+      else drawNpc(npc);
+    });
+  }
+
+  if (areaIndex === 0 && barbarian.entered) {
+    const depth = (barbarian.y + 1) * CELL + barbarian.dy * barbarian.step;
+    add(depth, 2, drawBarbarian);
+  }
+
+  const last = WHEAT_GROWTH_PIXELS.length - 1;
+  for (const crop of crops) {
+    if (crop.area !== areaIndex || crop.stage < last) continue;
+    add((crop.y + 1) * CELL, 4, () => drawCrop(crop));
+  }
+
+  add(slideY + CELL, 3, () => drawPlayer(slideX, slideY));
+  entries.sort((a, b) => a.depth - b.depth || a.priority - b.priority || a.order - b.order);
+  for (const entry of entries) entry.draw();
+}
+
+export function render() {
+  drawGround();
+  drawGrowingCrops();
+  if (showGrid) drawGrid();
+  const slideX = (player.wrap ? player.x - player.dx : player.x) * CELL + player.dx * player.step;
+  const slideY = (player.wrap ? player.y - player.dy : player.y) * CELL + player.dy * player.step;
+  drawDepthScene(slideX, slideY);
   for (const leaf of leaves) {
     ctx.globalAlpha = leaf.life / leaf.max;
     ctx.fillStyle = leaf.color;
     ctx.fillRect(Math.round(leaf.x), Math.round(leaf.y), leaf.size, leaf.size);
   }
   ctx.globalAlpha = 1;
-  if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
-  if (hoe && !hoeBehind) drawHeldHoe(slideX, slideY, hoe);
-  if (bag && !bagBehind) drawHeldBag(slideX, slideY, bag);
-  if (held?.kind === "wheat" && !wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
-  drawCrops(true);
   drawSeeds();
-  drawWater();
-  drawBushes();
-  drawBuildings("wall");
-  drawTrees("trunk");
-  drawBuildings("roof");
-  drawTrees("leaf");
   drawSmoke();
   drawHealth();
 }

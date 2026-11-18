@@ -1,7 +1,7 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=98";
-import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=98";
-import { player } from "./player.js?v=98";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=98";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=106";
+import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=106";
+import { player } from "./player.js?v=106";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=106";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
@@ -196,7 +196,7 @@ export function swordPose() {
   };
 }
 
-const SCOOP_FRAMES = 6;
+const SCOOP_FRAMES = 10;
 
 export const scoop = {
   frame: -1,
@@ -219,7 +219,8 @@ export function updateScoop() {
 export function hoePose() {
   const facing = scoop.frame < 0 ? player.facing : scoop.facing;
   const t = scoop.frame < 0 ? 0 : Math.sin(((scoop.frame + 0.5) / SCOOP_FRAMES) * Math.PI);
-  return { facing, frame: scoop.frame, t };
+  const returning = scoop.frame >= Math.ceil(SCOOP_FRAMES / 2);
+  return { facing, frame: scoop.frame, t, returning };
 }
 
 const SOW_FRAMES = 14;

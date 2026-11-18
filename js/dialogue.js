@@ -1,5 +1,5 @@
-import { player } from "./player.js?v=98";
-import { giveBread, heldItem, loafCanvas, takeHeldWheat } from "./items.js?v=98";
+import { player } from "./player.js?v=106";
+import { giveBread, heldItem, loafCanvas, takeHeldWheat } from "./items.js?v=106";
 
 const BAKER_INTRO = "Hi, I am the baker. Here is a loaf! If you want more, bring me some wheat.";
 const BAKER_AGAIN = "Bring me wheat, and I will bake you another loaf.";
