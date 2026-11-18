@@ -1,7 +1,7 @@
-import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=106";
-import { player } from "./player.js?v=106";
-import { blockedCell } from "./collision.js?v=106";
-import { MAP, areaIndex, tillGrass } from "./world.js?v=106";
+import { BAKER_PALETTE, BAKER_SPRITES, FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js?v=107";
+import { player } from "./player.js?v=107";
+import { blockedCell } from "./collision.js?v=107";
+import { MAP, areaIndex, tillGrass } from "./world.js?v=107";
 
 function hat(sprite, rows) {
   return rows.concat(sprite.slice(rows.length));
@@ -182,7 +182,7 @@ function updateFarmer(npc) {
   npc.hoe = 0;
   npc.hoeBack = false;
   if (npc.route < 0) {
-    const nextGrass = FARM_ROUTE.findIndex((cell) => cell.till && MAP[cell.y][cell.x] === "g");
+    const nextGrass = FARM_ROUTE.findIndex((cell) => cell.till && "g123456".includes(MAP[cell.y][cell.x]));
     npc.route = nextGrass >= 0 ? nextGrass : FARM_ROUTE.length;
   }
   if (npc.route >= FARM_ROUTE.length) {
@@ -195,7 +195,7 @@ function updateFarmer(npc) {
   const next = FARM_ROUTE[npc.route];
   if (npc.x === next.x && npc.y === next.y) {
     npc.route += 1;
-    if (next.till && tillGrass(npc.x, npc.y)) {
+    if (next.till && tillGrass(npc.x, npc.y, 7)) {
       npc.till = FARM_TILL;
       npc.facing = "down";
       return;

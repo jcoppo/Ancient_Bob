@@ -1,5 +1,5 @@
-import { CELL, COLS, ROWS } from "./config.js?v=106";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=106";
+import { CELL, COLS, ROWS } from "./config.js?v=107";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=107";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -216,7 +216,7 @@ function validRows(rows, alphabet) {
 export function applySavedTerrain(saved) {
   if (!Array.isArray(saved) || saved.length === 0 || saved.length > AREAS.length) return false;
   for (const area of saved) {
-    if (!validRows(area?.map, "wgspr") || !validRows(area?.bushes, ".b1234")) return false;
+    if (!validRows(area?.map, "wgspr123456") || !validRows(area?.bushes, ".b1234")) return false;
   }
   saved.forEach((area, index) => {
     area.map.forEach((row, y) => { AREAS[index].map[y] = row; });
@@ -233,16 +233,21 @@ export function applySavedTerrain(saved) {
 }
 
 const BUSH_MARKS = "b1234";
+const TILL_MARKS = "123456";
 
 export function bushAt(x, y) {
   return BUSH_MARKS.includes(BUSHES[y][x]);
 }
 
-export function tillGrass(x, y) {
+export function tillGrass(x, y, strokes = 1) {
   if (y < 0 || x < 0 || y >= MAP.length || x >= MAP[y].length) return false;
-  if (MAP[y][x] !== "g" || bushAt(x, y) || buildingAt(x, y) || treeAt(x, y)) return false;
+  if (!Number.isInteger(strokes) || strokes < 1) return false;
+  const mark = MAP[y][x];
+  if ((mark !== "g" && !TILL_MARKS.includes(mark)) || bushAt(x, y) || buildingAt(x, y) || treeAt(x, y)) return false;
+  const current = mark === "g" ? 0 : Number(mark);
+  const next = Math.min(7, current + strokes);
   const row = MAP[y];
-  MAP[y] = row.slice(0, x) + "s" + row.slice(x + 1);
+  MAP[y] = row.slice(0, x) + (next === 7 ? "s" : String(next)) + row.slice(x + 1);
   return true;
 }
 
