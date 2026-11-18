@@ -734,38 +734,6 @@ export const BAG_SPRITE = [
   ".....bbbbbb.....",
 ];
 
-export const WHEAT_BUNDLE_PALETTE = {
-  y: "#faecd0",
-  w: "#e8c464",
-  b: "#8a5a28",
-  n: "#5a3a20",
-};
-
-export const WHEAT_BUNDLE = [
-  ".....ww.w....",
-  "....ywwwwy...",
-  "...bwwwwwwb..",
-  "..ww.wwww.ww.",
-  ".bww.wbw.wwb.",
-  ".www.wbbwwww.",
-  "..wbwwww.ww..",
-  "...bwwbwww...",
-  "...bbwbw.bw..",
-  "....bwbw.ww..",
-  "....wbbw.bw..",
-  "....bwbwwb...",
-  ".....bwwwb...",
-  ".....bwwww...",
-  ".....bwwb....",
-  ".....nnnn....",
-  "....nnnnnn...",
-  "......bb.....",
-  ".....bbbb....",
-  ".....wbbw....",
-  ".....bbbb....",
-  "......bb.....",
-];
-
 export const HOE_SPRITE = [
   "......dwd.......",
   "......dwd.......",

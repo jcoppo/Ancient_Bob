@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=92";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=92";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=92";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=92";
-import { player } from "./player.js?v=92";
-import { NPCS } from "./npcs.js?v=92";
-import { barbarian } from "./enemies.js?v=92";
-import { showGrid } from "./input.js?v=92";
+import { CELL, COLS, ROWS } from "./config.js?v=96";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, GRASS_TILE, HOE_PALETTE, HOE_SPRITE, HOLD_ARMS, OUTLINE, PALETTE, PATH_TILE, ROCK_PIXELS, SOIL_TILE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WATER_TILE, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=96";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=96";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=96";
+import { player } from "./player.js?v=96";
+import { NPCS } from "./npcs.js?v=96";
+import { barbarian } from "./enemies.js?v=96";
+import { showGrid } from "./input.js?v=96";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -471,14 +471,20 @@ function drawHeldBag(slideX, slideY, pose) {
 }
 
 const WHEAT_HOLD = {
-  up: [2, -10],
-  down: [6, -8],
-  left: [-10, -6],
-  right: [10, -6],
+  up: [0, -9],
+  down: [4, -7],
+  left: [-7, -6],
+  right: [7, -6],
 };
 
+const WHEAT_BUNDLE_WIDTH = 16;
+const WHEAT_BUNDLE_HEIGHT = 22;
+const wheatBundleImage = new Image();
+wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=96", import.meta.url).href;
+
 function drawWheatBundle(ox, oy) {
-  drawSprite(WHEAT_BUNDLE, WHEAT_BUNDLE_PALETTE, ox, oy, false);
+  if (!wheatBundleImage.complete || !wheatBundleImage.naturalWidth) return;
+  ctx.drawImage(wheatBundleImage, ox, oy);
 }
 
 function drawHeldWheat(slideX, slideY, facing) {
@@ -595,8 +601,8 @@ export function render() {
     if (item.kind === "hoe") drawHoe(item.x * CELL, item.y * CELL + CELL - HOE_SPRITE.length);
     if (item.kind === "bag") drawBag(item.x * CELL, item.y * CELL + CELL - BAG_SPRITE.length);
     if (item.kind === "wheat") {
-      const ox = item.x * CELL + Math.floor((CELL - WHEAT_BUNDLE[0].length) / 2);
-      drawWheatBundle(ox, (item.y + 1) * CELL - WHEAT_BUNDLE.length);
+      const ox = item.x * CELL + Math.floor((CELL - WHEAT_BUNDLE_WIDTH) / 2);
+      drawWheatBundle(ox, (item.y + 1) * CELL - WHEAT_BUNDLE_HEIGHT);
     }
   }
   for (const npc of NPCS) {
