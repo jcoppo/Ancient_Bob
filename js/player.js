@@ -1,5 +1,5 @@
-import { CELL } from "./config.js?v=110";
-import { FARM_SPRITES, FARM_WALK } from "./pixels.js?v=110";
+import { CELL } from "./config.js?v=111";
+import { FARM_SPRITES, FARM_WALK } from "./pixels.js?v=111";
 
 const SLIDE = 2;
 
