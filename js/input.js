@@ -1,9 +1,10 @@
-import { npcInFront } from "./npcs.js?v=107";
-import { declineDialogue, dialogueIsOpen, handleSpace, moveDialogue } from "./dialogue.js?v=107";
-import { destroyYoungWheat, dropItem, harvestWheat, heldItem, itemInReach, pickupItem, startScoop, startSow, startThrust } from "./items.js?v=107";
-import { backMenu, closeMenu, menuIsOpen, moveMenu, openMenu, selectMenu } from "./menu.js?v=107";
+import { npcInFront } from "./npcs.js?v=110";
+import { declineDialogue, dialogueIsOpen, handleSpace, moveDialogue } from "./dialogue.js?v=110";
+import { destroyYoungWheat, dropItem, harvestWheat, heldItem, itemInReach, pickupItem, startScoop, startSow, startThrust } from "./items.js?v=110";
+import { backMenu, closeMenu, menuIsOpen, moveMenu, openMenu, selectMenu } from "./menu.js?v=110";
 
 export let showGrid = false;
+let actionHeld = false;
 
 const KEY_DIRS = {
   ArrowUp: [0, -1, "up"],
@@ -33,6 +34,10 @@ export function heldDirection() {
   if (dialogueIsOpen()) return null;
   const key = heldDirs.at(-1);
   return key ? KEY_DIRS[key] : null;
+}
+
+export function heldAction() {
+  return actionHeld && !menuIsOpen() && !dialogueIsOpen();
 }
 
 window.addEventListener("keydown", (event) => {
@@ -88,6 +93,7 @@ window.addEventListener("keydown", (event) => {
       return;
     }
     if (held?.kind === "hoe") {
+      actionHeld = true;
       startScoop();
       return;
     }
@@ -125,8 +131,10 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keyup", (event) => {
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
   releaseDirection(key);
+  if (key === " " || key === "z") actionHeld = false;
 });
 
 window.addEventListener("blur", () => {
   heldDirs.length = 0;
+  actionHeld = false;
 });

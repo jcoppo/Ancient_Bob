@@ -1,7 +1,7 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=107";
-import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=107";
-import { player } from "./player.js?v=107";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=107";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=110";
+import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=110";
+import { player } from "./player.js?v=110";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=110";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
@@ -197,23 +197,37 @@ export function swordPose() {
 }
 
 const SCOOP_FRAMES = 10;
+const SCOOP_GAP_FRAMES = 5;
 
 export const scoop = {
   frame: -1,
+  cooldown: 0,
   facing: "down",
+  area: 0,
+  x: 0,
+  y: 0,
 };
 
 export function startScoop() {
   if (heldItem()?.kind !== "hoe") return;
+  if (scoop.frame >= 0 || scoop.cooldown > 0) return;
   scoop.facing = player.facing;
+  scoop.area = areaIndex;
+  scoop.x = player.x;
+  scoop.y = player.y;
   scoop.frame = 0;
-  tillGrass(player.x, player.y);
 }
 
 export function updateScoop() {
-  if (scoop.frame < 0) return;
+  if (scoop.frame < 0) {
+    if (scoop.cooldown > 0) scoop.cooldown -= 1;
+    return;
+  }
   scoop.frame += 1;
-  if (scoop.frame >= SCOOP_FRAMES) scoop.frame = -1;
+  if (scoop.frame < SCOOP_FRAMES) return;
+  if (scoop.area === areaIndex) tillGrass(scoop.x, scoop.y);
+  scoop.frame = -1;
+  scoop.cooldown = SCOOP_GAP_FRAMES;
 }
 
 export function hoePose() {
@@ -372,6 +386,7 @@ export function resetItems() {
   player.holding = null;
   thrust.frame = -1;
   scoop.frame = -1;
+  scoop.cooldown = 0;
   sow.frame = -1;
   seeds.length = 0;
   clearCrops();
