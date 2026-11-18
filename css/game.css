@@ -7,13 +7,13 @@ html, body {
 }
 
 body {
-  --pad-top: 16px;
+  --pad-top: 8px;
   --pad-bottom: 18px;
-  --title: 44px;
-  --gap: 10px;
+  --rail: 152px;
+  --gap: 14px;
   --board: min(
-    calc(100dvh - var(--pad-top) - var(--pad-bottom) - var(--title) - var(--gap)),
-    calc(100vw - 32px)
+    calc(100dvh - var(--pad-top) - var(--pad-bottom)),
+    calc(100vw - var(--rail) - var(--rail) - var(--gap) - var(--gap) - 32px)
   );
   display: flex;
   align-items: center;
@@ -25,36 +25,35 @@ body {
 }
 
 h1 {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  margin: 0;
-  transform: translateY(-50%);
+  width: 100%;
+  margin: 6px 0 14px;
   font-size: 18px;
   font-weight: 700;
+  line-height: 1.4;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  text-align: center;
+  text-align: right;
+  white-space: nowrap;
   pointer-events: none;
 }
 
 .stage {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--gap);
+  position: relative;
   width: var(--board);
+  height: var(--board);
 }
 
 .topbar {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: calc(100% + var(--gap));
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  width: 100%;
-  height: var(--title);
-  min-height: var(--title);
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  width: var(--rail);
+  height: var(--board);
+  min-width: var(--rail);
 }
 
 .screen {
@@ -283,7 +282,7 @@ canvas {
   width: 44px;
   height: 44px;
   padding: 8px;
-  border: 2px solid #e7dccb;
+  border: 0;
   background: rgba(20, 17, 14, 0.78);
   color: #e7dccb;
   cursor: pointer;
