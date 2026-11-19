@@ -1,5 +1,5 @@
-import { CELL, COLS, ROWS } from "./config.js?v=154";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=154";
+import { CELL, COLS, ROWS } from "./config.js?v=156";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=156";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [

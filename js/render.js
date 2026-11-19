@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=154";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=154";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=154";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=154";
-import { player } from "./player.js?v=154";
-import { NPCS } from "./npcs.js?v=154";
-import { barbarian } from "./enemies.js?v=154";
-import { showGrid } from "./input.js?v=154";
+import { CELL, COLS, ROWS } from "./config.js?v=156";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=156";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=156";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=156";
+import { player } from "./player.js?v=156";
+import { NPCS } from "./npcs.js?v=156";
+import { barbarian } from "./enemies.js?v=156";
+import { showGrid } from "./input.js?v=156";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -15,7 +15,7 @@ ctx.imageSmoothingEnabled = false;
 
 function loadTileImage(name) {
   const image = new Image();
-  image.src = new URL(`../assets/images/tiles/${name}.png?v=154`, import.meta.url).href;
+  image.src = new URL(`../assets/images/tiles/${name}.png?v=156`, import.meta.url).href;
   return image;
 }
 
@@ -37,13 +37,14 @@ const PLAYER_FRAME_HEIGHT = 17;
 const PLAYER_COLUMN_WIDTH = 24;
 const PLAYER_COLUMN_OFFSET = 5;
 const PLAYER_IDLE_COLUMN = 0;
+const PLAYER_WALK_COLUMNS = [1, 0, 2, 0];
 const PLAYER_FRAME_Y = { down: 0, right: 23, left: 46, up: 69 };
 const bakerImage = new Image();
-bakerImage.src = new URL("../assets/images/baker/baker_still.png?v=154", import.meta.url).href;
+bakerImage.src = new URL("../assets/images/baker/baker_still.png?v=156", import.meta.url).href;
 
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
-  "../assets/images/player/player_walk_sheet.png?v=154",
+  "../assets/images/player/player_walk_sheet.png?v=156",
   import.meta.url,
 ).href;
 
@@ -416,12 +417,16 @@ function drawCharacter(person, palette, originX = person.x * CELL, originY = per
 
 function drawPlayerCharacter(originX, originY) {
   if (!playerSpriteSheet.complete || !playerSpriteSheet.naturalWidth) return;
+  const moving = player.walking;
+  const column = moving
+    ? PLAYER_WALK_COLUMNS[player.walk % PLAYER_WALK_COLUMNS.length]
+    : PLAYER_IDLE_COLUMN;
   const frameY = PLAYER_FRAME_Y[player.facing] ?? PLAYER_FRAME_Y.down;
   const horizontalOffset = Math.floor((CELL - PLAYER_FRAME_WIDTH) / 2);
   const baselineY = originY + CELL - PLAYER_FRAME_HEIGHT;
   ctx.drawImage(
     playerSpriteSheet,
-    PLAYER_IDLE_COLUMN * PLAYER_COLUMN_WIDTH + PLAYER_COLUMN_OFFSET,
+    column * PLAYER_COLUMN_WIDTH + PLAYER_COLUMN_OFFSET,
     frameY,
     PLAYER_FRAME_WIDTH,
     PLAYER_FRAME_HEIGHT,
@@ -471,7 +476,7 @@ const HOE_HEIGHT = 14;
 const HOE_PIVOT = [7, 5];
 const HOE_TURN = Math.PI * 0.25;
 const hoeImage = new Image();
-hoeImage.src = new URL("../assets/images/hoe.png?v=154", import.meta.url).href;
+hoeImage.src = new URL("../assets/images/hoe.png?v=156", import.meta.url).href;
 
 function drawHoe(ox, oy, angle = 0) {
   if (!hoeImage.complete || !hoeImage.naturalWidth) return;
@@ -520,7 +525,7 @@ const WHEAT_HOLD = {
 const WHEAT_BUNDLE_WIDTH = 16;
 const WHEAT_BUNDLE_HEIGHT = 22;
 const wheatBundleImage = new Image();
-wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=154", import.meta.url).href;
+wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=156", import.meta.url).href;
 
 function drawWheatBundle(ox, oy) {
   if (!wheatBundleImage.complete || !wheatBundleImage.naturalWidth) return;
