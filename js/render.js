@@ -34,7 +34,7 @@ const TILLED_TILE_IMAGES = Array.from(
 
 const PLAYER_SHEET_CELL = 32;
 const PLAYER_IDLE_COLUMN = 0;
-const PLAYER_WALK_COLUMNS = [0, 1, 0, 2];
+const PLAYER_WALK_COLUMNS = [1, 0, 2, 0];
 const PLAYER_SHEET_ROWS = { up: 0, left: 1, down: 2, right: 3 };
 const PLAYER_FRAME_BOUNDS = [
   [[7, 7, 24, 32], [6, 5, 23, 32], [8, 5, 25, 32]],
@@ -44,7 +44,7 @@ const PLAYER_FRAME_BOUNDS = [
 ];
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
-  "../assets/images/player3.0/player3.png?v=132",
+  "../assets/images/player3.0/player3.png?v=133",
   import.meta.url,
 ).href;
 

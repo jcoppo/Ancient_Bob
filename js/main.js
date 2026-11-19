@@ -8,7 +8,7 @@ import { areaNeighbor, crossingBlocked, enterArea } from "./world.js?v=132";
 import { heldAction, heldDirection } from "./input.js?v=132";
 import { startScoop, updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js?v=132";
 import { loadGame, paintMenu } from "./menu.js?v=132";
-import { render, updateSmoke } from "./render.js?v=132";
+import { render, updateSmoke } from "./render.js?v=133";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;
