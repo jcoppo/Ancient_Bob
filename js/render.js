@@ -37,14 +37,14 @@ const PLAYER_IDLE_COLUMN = 0;
 const PLAYER_WALK_COLUMNS = [1, 0, 2, 0];
 const PLAYER_SHEET_ROWS = { up: 0, left: 1, down: 2, right: 3 };
 const PLAYER_FRAME_BOUNDS = [
-  [[7, 7, 24, 32], [6, 5, 23, 32], [8, 5, 25, 32]],
-  [[7, 7, 23, 32], [7, 6, 23, 32], [7, 6, 23, 32]],
-  [[7, 7, 24, 32], [7, 5, 24, 32], [6, 5, 23, 32]],
-  [[7, 7, 23, 32], [7, 6, 23, 32], [7, 6, 23, 32]],
+  [[9, 5, 23, 31], [8, 4, 23, 31], [9, 4, 24, 31]],
+  [[9, 5, 22, 30], [8, 5, 23, 30], [8, 5, 23, 30]],
+  [[9, 4, 23, 30], [9, 4, 22, 30], [8, 4, 23, 30]],
+  [[9, 4, 23, 29], [8, 4, 22, 29], [7, 4, 22, 29]],
 ];
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
-  "../assets/images/player3.0/player3.png?v=133",
+  "../assets/images/player4.0/player4.png?v=134",
   import.meta.url,
 ).href;
 
