@@ -1,14 +1,14 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js?v=160";
-import { NPCS, updateNpcs } from "./npcs.js?v=160";
-import { updateBarbarian } from "./enemies.js?v=160";
-import { player, updatePlayer } from "./player.js?v=160";
-import { blockedCell } from "./collision.js?v=160";
-import { dialogueIsOpen } from "./dialogue.js?v=160";
-import { areaNeighbor, crossingBlocked, enterArea } from "./world.js?v=160";
-import { heldAction, heldDirection } from "./input.js?v=160";
-import { startScoop, updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js?v=160";
-import { loadGame, paintMenu } from "./menu.js?v=160";
-import { render, updateSmoke } from "./render.js?v=160";
+import { COLS, FRAME_MS, ROWS } from "./config.js";
+import { NPCS, updateNpcs } from "./npcs.js";
+import { updateBarbarian } from "./enemies.js";
+import { player, updatePlayer } from "./player.js";
+import { blockedCell } from "./collision.js";
+import { dialogueIsOpen } from "./dialogue.js";
+import { areaNeighbor, crossingBlocked, enterArea } from "./world.js";
+import { heldAction, heldDirection } from "./input.js";
+import { startScoop, updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js";
+import { loadGame, paintMenu } from "./menu.js";
+import { render, updateSmoke } from "./render.js";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;

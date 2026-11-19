@@ -1,5 +1,5 @@
-import { CELL, COLS, ROWS } from "./config.js?v=160";
-import { TREE_SCALE, TREE_SPRITES } from "./pixels.js?v=160";
+import { CELL, COLS, ROWS } from "./config.js";
+import { TREE_SCALE, TREE_SPRITES } from "./pixels.js";
 
 // w water, g grass, s soil, p rock path. The shore meets the top and left edges.
 const VILLAGE_MAP = [
@@ -222,6 +222,9 @@ export function applySavedTerrain(saved) {
     area.map.forEach((row, y) => { AREAS[index].map[y] = row; });
     area.bushes.forEach((row, y) => { AREAS[index].bushes[y] = row; });
   });
+  if (AREAS[0].bushes.every((row) => !/[b1234]/.test(row))) {
+    START_TERRAIN[0].bushes.forEach((row, y) => { AREAS[0].bushes[y] = row; });
+  }
   paintTiles(AREAS[1].map, MEADOW_CLEARED, "s", "g");
   stampSoil(AREAS[1].map, MEADOW_SOIL);
   const bushRow = AREAS[1].bushes[11];

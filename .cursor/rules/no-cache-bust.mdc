@@ -1,0 +1,13 @@
+---
+description: Do not add cache-busting version query strings
+alwaysApply: true
+---
+
+# No cache-busting query strings
+
+Browser caching is disabled. Do not add `?v=` (or any other cache-busting query) to script, stylesheet, module, or asset URLs.
+
+```js
+import { player } from "./player.js";
+image.src = new URL("../assets/images/baker/baker_still.png", import.meta.url).href;
+```
