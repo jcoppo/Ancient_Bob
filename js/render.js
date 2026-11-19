@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=122";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=122";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=122";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=122";
-import { player } from "./player.js?v=122";
-import { NPCS } from "./npcs.js?v=122";
-import { barbarian } from "./enemies.js?v=122";
-import { showGrid } from "./input.js?v=122";
+import { CELL, COLS, ROWS } from "./config.js?v=132";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=132";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=132";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=132";
+import { player } from "./player.js?v=132";
+import { NPCS } from "./npcs.js?v=132";
+import { barbarian } from "./enemies.js?v=132";
+import { showGrid } from "./input.js?v=132";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -15,7 +15,7 @@ ctx.imageSmoothingEnabled = false;
 
 function loadTileImage(name) {
   const image = new Image();
-  image.src = new URL(`../assets/images/tiles/${name}.png?v=122`, import.meta.url).href;
+  image.src = new URL(`../assets/images/tiles/${name}.png?v=132`, import.meta.url).href;
   return image;
 }
 
@@ -33,19 +33,18 @@ const TILLED_TILE_IMAGES = Array.from(
 );
 
 const PLAYER_SHEET_CELL = 32;
-const PLAYER_IDLE_ROWS = { down: 0, left: 1, right: 1, up: 2 };
-const PLAYER_WALK_ROWS = { down: 3, left: 4, right: 4, up: 5 };
+const PLAYER_IDLE_COLUMN = 0;
+const PLAYER_WALK_COLUMNS = [0, 1, 0, 2];
+const PLAYER_SHEET_ROWS = { up: 0, left: 1, down: 2, right: 3 };
 const PLAYER_FRAME_BOUNDS = [
-  [[9, 5, 22, 24], [9, 5, 22, 24], [9, 6, 22, 24], [9, 6, 22, 24], [9, 5, 22, 24], [9, 5, 22, 24]],
-  [[10, 5, 23, 24], [10, 5, 23, 24], [10, 6, 23, 24], [10, 6, 23, 24], [10, 5, 23, 24], [10, 5, 23, 24]],
-  [[9, 5, 22, 24], [9, 5, 22, 24], [9, 6, 22, 24], [9, 6, 22, 24], [9, 5, 22, 24], [9, 5, 22, 24]],
-  [[9, 3, 22, 23], [9, 4, 22, 23], [9, 5, 22, 23], [9, 3, 22, 23], [9, 4, 22, 23], [9, 5, 22, 23]],
-  [[10, 3, 23, 23], [10, 4, 23, 23], [10, 5, 23, 23], [10, 3, 23, 23], [10, 4, 23, 23], [10, 5, 23, 23]],
-  [[9, 3, 22, 23], [9, 4, 22, 23], [9, 5, 22, 23], [9, 3, 22, 23], [9, 4, 22, 23], [9, 5, 22, 23]],
+  [[7, 7, 24, 32], [6, 5, 23, 32], [8, 5, 25, 32]],
+  [[7, 7, 23, 32], [7, 6, 23, 32], [7, 6, 23, 32]],
+  [[7, 7, 24, 32], [7, 5, 24, 32], [6, 5, 23, 32]],
+  [[7, 7, 23, 32], [7, 6, 23, 32], [7, 6, 23, 32]],
 ];
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
-  "../assets/images/player2.0/player2_sheet.png?v=125",
+  "../assets/images/player3.0/player3.png?v=132",
   import.meta.url,
 ).href;
 
@@ -418,9 +417,10 @@ function drawCharacter(person, palette, originX = person.x * CELL, originY = per
 
 function drawPlayerCharacter(originX, originY, moving, frame) {
   if (!playerSpriteSheet.complete || !playerSpriteSheet.naturalWidth) return;
-  const rows = moving ? PLAYER_WALK_ROWS : PLAYER_IDLE_ROWS;
-  const row = rows[player.facing] ?? rows.down;
-  const column = frame % 6;
+  const row = PLAYER_SHEET_ROWS[player.facing] ?? PLAYER_SHEET_ROWS.down;
+  const column = moving
+    ? PLAYER_WALK_COLUMNS[frame % PLAYER_WALK_COLUMNS.length]
+    : PLAYER_IDLE_COLUMN;
   const [left, top, right, bottom] = PLAYER_FRAME_BOUNDS[row][column];
   const sourceWidth = right - left;
   const sourceHeight = bottom - top;
@@ -428,23 +428,17 @@ function drawPlayerCharacter(originX, originY, moving, frame) {
   const drawHeight = sourceHeight;
   const horizontalOffset = Math.floor((CELL - drawWidth) / 2);
   const baselineY = originY + CELL - drawHeight;
-  if (player.facing === "left") {
-    ctx.save();
-    ctx.translate(originX + CELL, 0);
-    ctx.scale(-1, 1);
-  }
   ctx.drawImage(
     playerSpriteSheet,
     column * PLAYER_SHEET_CELL + left,
     row * PLAYER_SHEET_CELL + top,
     sourceWidth,
     sourceHeight,
-    player.facing === "left" ? horizontalOffset : originX + horizontalOffset,
+    originX + horizontalOffset,
     baselineY,
     drawWidth,
     drawHeight,
   );
-  if (player.facing === "left") ctx.restore();
 }
 
 const SWORD_HOLD = {
@@ -486,7 +480,7 @@ const HOE_HEIGHT = 14;
 const HOE_PIVOT = [7, 5];
 const HOE_TURN = Math.PI * 0.25;
 const hoeImage = new Image();
-hoeImage.src = new URL("../assets/images/hoe.png?v=122", import.meta.url).href;
+hoeImage.src = new URL("../assets/images/hoe.png?v=132", import.meta.url).href;
 
 function drawHoe(ox, oy, angle = 0) {
   if (!hoeImage.complete || !hoeImage.naturalWidth) return;
@@ -535,7 +529,7 @@ const WHEAT_HOLD = {
 const WHEAT_BUNDLE_WIDTH = 16;
 const WHEAT_BUNDLE_HEIGHT = 22;
 const wheatBundleImage = new Image();
-wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=122", import.meta.url).href;
+wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=132", import.meta.url).href;
 
 function drawWheatBundle(ox, oy) {
   if (!wheatBundleImage.complete || !wheatBundleImage.naturalWidth) return;
