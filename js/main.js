@@ -1,14 +1,14 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js?v=157";
-import { NPCS, updateNpcs } from "./npcs.js?v=157";
-import { updateBarbarian } from "./enemies.js?v=157";
-import { player, updatePlayer } from "./player.js?v=157";
-import { blockedCell } from "./collision.js?v=157";
-import { dialogueIsOpen } from "./dialogue.js?v=157";
-import { areaNeighbor, crossingBlocked, enterArea } from "./world.js?v=157";
-import { heldAction, heldDirection } from "./input.js?v=157";
-import { startScoop, updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js?v=157";
-import { loadGame, paintMenu } from "./menu.js?v=157";
-import { render, updateSmoke } from "./render.js?v=157";
+import { COLS, FRAME_MS, ROWS } from "./config.js?v=160";
+import { NPCS, updateNpcs } from "./npcs.js?v=160";
+import { updateBarbarian } from "./enemies.js?v=160";
+import { player, updatePlayer } from "./player.js?v=160";
+import { blockedCell } from "./collision.js?v=160";
+import { dialogueIsOpen } from "./dialogue.js?v=160";
+import { areaNeighbor, crossingBlocked, enterArea } from "./world.js?v=160";
+import { heldAction, heldDirection } from "./input.js?v=160";
+import { startScoop, updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js?v=160";
+import { loadGame, paintMenu } from "./menu.js?v=160";
+import { render, updateSmoke } from "./render.js?v=160";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;

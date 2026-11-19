@@ -1,7 +1,7 @@
-import { CELL, COLS, FPS, ROWS } from "./config.js?v=157";
-import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=157";
-import { player } from "./player.js?v=157";
-import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=157";
+import { CELL, COLS, FPS, ROWS } from "./config.js?v=160";
+import { WHEAT_GROWTH_PIXELS } from "./pixels.js?v=160";
+import { player } from "./player.js?v=160";
+import { MAP, areaIndex, areaList, cutBush, tillGrass } from "./world.js?v=160";
 
 export const items = [
   { kind: "sword", area: 0, x: player.x + 2, y: player.y - 1, held: false },
@@ -134,25 +134,56 @@ const LEAF_LIFE = 28;
 
 export const leaves = [];
 
-function burstLeaves(cellX, cellY) {
+function burstLeaves(cellX, cellY, colors = null, speed = 0.7, sizeCut = 0) {
   const ox = cellX * CELL;
   const oy = cellY * CELL;
-  for (const [px, py, color, size, fall] of LEAF_FALL) {
+  LEAF_FALL.forEach(([px, py, color, size, fall], index) => {
     const dx = px + size / 2 - 8;
     const dy = py + size / 2 - 8;
     const dist = Math.hypot(dx, dy) || 1;
     leaves.push({
       x: ox + px,
       y: oy + py,
-      vx: (dx / dist) * 0.7,
-      vy: (dy / dist) * 0.7,
+      vx: (dx / dist) * speed,
+      vy: (dy / dist) * speed,
       fall,
-      color,
-      size,
+      color: colors?.length ? colors[index % colors.length] : color,
+      size: Math.max(1, size - sizeCut),
       life: LEAF_LIFE,
       max: LEAF_LIFE,
     });
+  });
+}
+
+function wheatColors(stage) {
+  const phase = WHEAT_GROWTH_PIXELS[stage];
+  if (!phase) return [];
+  const counts = new Map();
+  for (const row of phase) {
+    for (const color of row) {
+      if (!color) continue;
+      counts.set(color, (counts.get(color) || 0) + 1);
+    }
   }
+  const weighted = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const total = weighted.reduce((sum, [, count]) => sum + count, 0);
+  if (!total) return [];
+  const colors = [];
+  for (let i = 0; i < LEAF_FALL.length; i++) {
+    let needle = Math.floor(((i + 0.5) * total) / LEAF_FALL.length);
+    for (const [color, count] of weighted) {
+      if (needle < count) {
+        colors.push(color);
+        break;
+      }
+      needle -= count;
+    }
+  }
+  return colors;
+}
+
+function burstWheat(cellX, cellY, stage) {
+  burstLeaves(cellX, cellY, wheatColors(stage), 1.4, 1);
 }
 
 export function updateLeaves() {
@@ -253,7 +284,8 @@ const SEED_COLORS = ["#e6c15a", "#c4924a", "#8a5a32", "#f0d7a0"];
 export const sow = { frame: -1 };
 export const seeds = [];
 
-const STAGE_FRAMES = FPS * 4;
+export const STAGE_FRAMES = FPS * 60 * 4;
+const LEGACY_STAGE_FRAMES = FPS * 4;
 
 export const crops = [];
 
@@ -282,6 +314,17 @@ export function cropSnapshot() {
     stage: crop.stage,
     wait: crop.wait,
   }));
+}
+
+export function migrateCropWaits(saved, savedStageFrames) {
+  if (!Array.isArray(saved) || savedStageFrames === STAGE_FRAMES) return;
+  const previous = savedStageFrames || LEGACY_STAGE_FRAMES;
+  if (previous <= 0 || previous >= STAGE_FRAMES) return;
+  const scale = STAGE_FRAMES / previous;
+  for (const crop of saved) {
+    if (!Number.isInteger(crop?.wait) || crop.wait <= 0 || crop.wait > previous) continue;
+    crop.wait = Math.round(crop.wait * scale);
+  }
 }
 
 export function applyCrops(saved) {
@@ -313,8 +356,9 @@ export function destroyYoungWheat() {
   if (MAP[player.y]?.[player.x] !== "s") return false;
   const index = wheatAt(player.x, player.y);
   if (index < 0 || crops[index].stage >= WHEAT_GROWTH_PIXELS.length - 1) return false;
+  const stage = crops[index].stage;
   crops.splice(index, 1);
-  burstLeaves(player.x, player.y);
+  burstWheat(player.x, player.y, stage);
   return true;
 }
 
@@ -323,7 +367,9 @@ export function harvestWheat() {
   if (MAP[player.y]?.[player.x] !== "s") return false;
   const index = wheatAt(player.x, player.y);
   if (index < 0 || crops[index].stage < WHEAT_GROWTH_PIXELS.length - 1) return false;
+  const stage = crops[index].stage;
   crops.splice(index, 1);
+  burstWheat(player.x, player.y, stage);
   items.push({ kind: "wheat", area: areaIndex, x: player.x, y: player.y, held: true });
   player.holding = "wheat";
   return true;

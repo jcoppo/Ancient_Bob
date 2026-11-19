@@ -1,8 +1,8 @@
-import { COLS, ROWS } from "./config.js?v=157";
-import { healPlayer, player, resetPlayer } from "./player.js?v=157";
-import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=157";
-import { NPCS, resetNpcs } from "./npcs.js?v=157";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=157";
+import { COLS, ROWS } from "./config.js?v=160";
+import { healPlayer, player, resetPlayer } from "./player.js?v=160";
+import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, migrateCropWaits, resetItems, STAGE_FRAMES, stores, takeBread } from "./items.js?v=160";
+import { NPCS, resetNpcs } from "./npcs.js?v=160";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=160";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
@@ -418,6 +418,7 @@ function saveGame() {
     })),
     stores: { bread: stores.bread, gold: stores.gold },
     crops: cropSnapshot(),
+    wheatStageFrames: STAGE_FRAMES,
   };
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
@@ -483,6 +484,7 @@ export function loadGame() {
 
   if (Number.isInteger(data.stores?.bread) && data.stores.bread >= 0) stores.bread = data.stores.bread;
   if (Number.isInteger(data.stores?.gold) && data.stores.gold >= 0) stores.gold = data.stores.gold;
+  migrateCropWaits(data.crops, data.wheatStageFrames);
   applyCrops(data.crops);
 
   if (!Array.isArray(data.npcs)) return;
