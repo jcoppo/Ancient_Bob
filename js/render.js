@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=151";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=151";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=151";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=151";
-import { player } from "./player.js?v=151";
-import { NPCS } from "./npcs.js?v=151";
-import { barbarian } from "./enemies.js?v=151";
-import { showGrid } from "./input.js?v=151";
+import { CELL, COLS, ROWS } from "./config.js?v=153";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=153";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=153";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=153";
+import { player } from "./player.js?v=153";
+import { NPCS } from "./npcs.js?v=153";
+import { barbarian } from "./enemies.js?v=153";
+import { showGrid } from "./input.js?v=153";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -15,7 +15,7 @@ ctx.imageSmoothingEnabled = false;
 
 function loadTileImage(name) {
   const image = new Image();
-  image.src = new URL(`../assets/images/tiles/${name}.png?v=151`, import.meta.url).href;
+  image.src = new URL(`../assets/images/tiles/${name}.png?v=153`, import.meta.url).href;
   return image;
 }
 
@@ -38,9 +38,12 @@ const PLAYER_COLUMN_WIDTH = 24;
 const PLAYER_COLUMN_OFFSET = 5;
 const PLAYER_IDLE_COLUMN = 0;
 const PLAYER_FRAME_Y = { down: 0, right: 23, left: 46, up: 69 };
+const bakerImage = new Image();
+bakerImage.src = new URL("../assets/images/baker/baker_still.png?v=153", import.meta.url).href;
+
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
-  "../assets/images/player/player_walk_sheet.png?v=151",
+  "../assets/images/player/player_walk_sheet.png?v=153",
   import.meta.url,
 ).href;
 
@@ -468,7 +471,7 @@ const HOE_HEIGHT = 14;
 const HOE_PIVOT = [7, 5];
 const HOE_TURN = Math.PI * 0.25;
 const hoeImage = new Image();
-hoeImage.src = new URL("../assets/images/hoe.png?v=151", import.meta.url).href;
+hoeImage.src = new URL("../assets/images/hoe.png?v=153", import.meta.url).href;
 
 function drawHoe(ox, oy, angle = 0) {
   if (!hoeImage.complete || !hoeImage.naturalWidth) return;
@@ -517,7 +520,7 @@ const WHEAT_HOLD = {
 const WHEAT_BUNDLE_WIDTH = 16;
 const WHEAT_BUNDLE_HEIGHT = 22;
 const wheatBundleImage = new Image();
-wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=151", import.meta.url).href;
+wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=153", import.meta.url).href;
 
 function drawWheatBundle(ox, oy) {
   if (!wheatBundleImage.complete || !wheatBundleImage.naturalWidth) return;
@@ -604,6 +607,17 @@ function drawSlash(worldX, worldY, facing, frame) {
   }
 }
 
+function drawBakerSprite(originX, originY) {
+  if (!bakerImage.complete || !bakerImage.naturalWidth) return;
+  const width = bakerImage.naturalWidth;
+  const height = bakerImage.naturalHeight;
+  ctx.drawImage(
+    bakerImage,
+    originX + Math.floor((CELL - width) / 2),
+    originY + CELL - height,
+  );
+}
+
 function drawNpc(npc) {
   const x = npc.x * CELL;
   const y = npc.y * CELL;
@@ -611,7 +625,8 @@ function drawNpc(npc) {
     ? { facing: npc.facing, t: npc.hoe || 0, returning: !!npc.hoeBack }
     : null;
   if (hoe && npc.facing === "up") drawHeldHoe(x, y, hoe);
-  drawCharacter(npc, npc.palette);
+  if (npc.name === "Baker") drawBakerSprite(x, y);
+  else drawCharacter(npc, npc.palette);
   if (hoe && npc.facing !== "up") drawHeldHoe(x, y, hoe);
 }
 
