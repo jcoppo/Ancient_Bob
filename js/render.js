@@ -1,11 +1,11 @@
-import { CELL, COLS, ROWS } from "./config.js?v=116";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=116";
-import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=116";
-import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=116";
-import { player } from "./player.js?v=116";
-import { NPCS } from "./npcs.js?v=116";
-import { barbarian } from "./enemies.js?v=116";
-import { showGrid } from "./input.js?v=116";
+import { CELL, COLS, ROWS } from "./config.js?v=118";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js?v=118";
+import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js?v=118";
+import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js?v=118";
+import { player } from "./player.js?v=118";
+import { NPCS } from "./npcs.js?v=118";
+import { barbarian } from "./enemies.js?v=118";
+import { showGrid } from "./input.js?v=118";
 
 const canvas = document.getElementById("game");
 canvas.width = COLS * CELL;
@@ -15,7 +15,7 @@ ctx.imageSmoothingEnabled = false;
 
 function loadTileImage(name) {
   const image = new Image();
-  image.src = new URL(`../assets/images/tiles/${name}.png?v=116`, import.meta.url).href;
+  image.src = new URL(`../assets/images/tiles/${name}.png?v=118`, import.meta.url).href;
   return image;
 }
 
@@ -45,7 +45,7 @@ const PLAYER_FRAME_BOUNDS = [
 ];
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
-  "../assets/images/player2.0/player2_sheet.png?v=116",
+  "../assets/images/player2.0/player2_sheet.png?v=118",
   import.meta.url,
 ).href;
 
@@ -422,6 +422,12 @@ function drawPlayerCharacter(originX, originY, moving, frame) {
   const row = rows[player.facing] ?? rows.down;
   const column = frame % 6;
   const [left, top, right, bottom] = PLAYER_FRAME_BOUNDS[row][column];
+  const sourceWidth = right - left;
+  const sourceHeight = bottom - top;
+  const drawWidth = sourceWidth;
+  const drawHeight = sourceHeight;
+  const horizontalOffset = Math.floor((CELL - drawWidth) / 2);
+  const baselineY = originY + CELL - drawHeight;
   if (player.facing === "left") {
     ctx.save();
     ctx.translate(originX + CELL, 0);
@@ -431,12 +437,12 @@ function drawPlayerCharacter(originX, originY, moving, frame) {
     playerSpriteSheet,
     column * PLAYER_SHEET_CELL + left,
     row * PLAYER_SHEET_CELL + top,
-    right - left,
-    bottom - top,
-    player.facing === "left" ? 0 : originX,
-    originY,
-    CELL,
-    CELL,
+    sourceWidth,
+    sourceHeight,
+    player.facing === "left" ? horizontalOffset : originX + horizontalOffset,
+    baselineY,
+    drawWidth,
+    drawHeight,
   );
   if (player.facing === "left") ctx.restore();
 }
@@ -480,7 +486,7 @@ const HOE_HEIGHT = 14;
 const HOE_PIVOT = [7, 5];
 const HOE_TURN = Math.PI * 0.25;
 const hoeImage = new Image();
-hoeImage.src = new URL("../assets/images/hoe.png?v=116", import.meta.url).href;
+hoeImage.src = new URL("../assets/images/hoe.png?v=118", import.meta.url).href;
 
 function drawHoe(ox, oy, angle = 0) {
   if (!hoeImage.complete || !hoeImage.naturalWidth) return;
@@ -529,7 +535,7 @@ const WHEAT_HOLD = {
 const WHEAT_BUNDLE_WIDTH = 16;
 const WHEAT_BUNDLE_HEIGHT = 22;
 const wheatBundleImage = new Image();
-wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=116", import.meta.url).href;
+wheatBundleImage.src = new URL("../assets/images/wheat/wheat_bundle.png?v=118", import.meta.url).href;
 
 function drawWheatBundle(ox, oy) {
   if (!wheatBundleImage.complete || !wheatBundleImage.naturalWidth) return;
