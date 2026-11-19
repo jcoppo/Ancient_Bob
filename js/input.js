@@ -1,7 +1,7 @@
-import { npcInFront } from "./npcs.js?v=118";
-import { declineDialogue, dialogueIsOpen, handleSpace, moveDialogue } from "./dialogue.js?v=118";
-import { destroyYoungWheat, dropItem, harvestWheat, heldItem, itemInReach, pickupItem, startScoop, startSow, startThrust } from "./items.js?v=118";
-import { backMenu, closeMenu, menuIsOpen, moveMenu, openMenu, selectMenu } from "./menu.js?v=118";
+import { npcInFront } from "./npcs.js?v=122";
+import { declineDialogue, dialogueIsOpen, handleSpace, moveDialogue } from "./dialogue.js?v=122";
+import { destroyYoungWheat, dropItem, harvestWheat, heldItem, itemInReach, pickupItem, startScoop, startSow, startThrust } from "./items.js?v=122";
+import { backMenu, closeMenu, menuIsOpen, moveMenu, openMenu, selectMenu } from "./menu.js?v=122";
 
 export let showGrid = false;
 let actionHeld = false;

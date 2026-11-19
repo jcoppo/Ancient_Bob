@@ -1,8 +1,8 @@
-import { COLS, ROWS } from "./config.js?v=118";
-import { healPlayer, player, resetPlayer } from "./player.js?v=118";
-import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=118";
-import { NPCS, resetNpcs } from "./npcs.js?v=118";
-import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=118";
+import { COLS, ROWS } from "./config.js?v=122";
+import { healPlayer, player, resetPlayer } from "./player.js?v=122";
+import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, resetItems, stores, takeBread } from "./items.js?v=122";
+import { NPCS, resetNpcs } from "./npcs.js?v=122";
+import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js?v=122";
 
 const SAVE_KEY = "ancient-bob";
 const OPTIONS = ["Items", "Map", "Save Game", "New Game", "Exit"];
