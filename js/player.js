@@ -1,4 +1,4 @@
-import { CELL } from "./config.js?v=132";
+import { CELL } from "./config.js?v=151";
 
 const SLIDE = 2;
 const WALK_FRAMES = 4;
@@ -42,8 +42,6 @@ export function healPlayer(amount) {
 }
 
 export function updatePlayer(dir, tryStep) {
-  let continuing = false;
-
   if (player.step > 0) {
     player.step += SLIDE;
     player.walkClock += 1;
@@ -61,7 +59,13 @@ export function updatePlayer(dir, tryStep) {
     player.dx = 0;
     player.dy = 0;
     player.wrap = false;
-    continuing = true;
+    if (!dir) {
+      player.walk = 0;
+      player.walkClock = 0;
+    } else {
+      player.facing = dir[2];
+    }
+    return;
   }
 
   if (!dir) {
@@ -77,8 +81,4 @@ export function updatePlayer(dir, tryStep) {
   player.dx = dx;
   player.dy = dy;
   player.step = SLIDE;
-  if (!continuing) {
-    player.walk = 0;
-    player.walkClock = 0;
-  }
 }

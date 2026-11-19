@@ -1,14 +1,14 @@
-import { COLS, FRAME_MS, ROWS } from "./config.js?v=132";
-import { NPCS, updateNpcs } from "./npcs.js?v=132";
-import { updateBarbarian } from "./enemies.js?v=132";
-import { player, updatePlayer } from "./player.js?v=132";
-import { blockedCell } from "./collision.js?v=132";
-import { dialogueIsOpen } from "./dialogue.js?v=132";
-import { areaNeighbor, crossingBlocked, enterArea } from "./world.js?v=132";
-import { heldAction, heldDirection } from "./input.js?v=132";
-import { startScoop, updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js?v=132";
-import { loadGame, paintMenu } from "./menu.js?v=132";
-import { render, updateSmoke } from "./render.js?v=150";
+import { COLS, FRAME_MS, ROWS } from "./config.js?v=151";
+import { NPCS, updateNpcs } from "./npcs.js?v=151";
+import { updateBarbarian } from "./enemies.js?v=151";
+import { player, updatePlayer } from "./player.js?v=151";
+import { blockedCell } from "./collision.js?v=151";
+import { dialogueIsOpen } from "./dialogue.js?v=151";
+import { areaNeighbor, crossingBlocked, enterArea } from "./world.js?v=151";
+import { heldAction, heldDirection } from "./input.js?v=151";
+import { startScoop, updateCrops, updateLeaves, updateScoop, updateSow, updateThrust } from "./items.js?v=151";
+import { loadGame, paintMenu } from "./menu.js?v=151";
+import { render, updateSmoke } from "./render.js?v=151";
 
 function tryStep(dx, dy) {
   const nx = player.x + dx;
@@ -55,14 +55,9 @@ function frame(now) {
   lastTime = now;
   if (accumulator > FRAME_MS * 5) accumulator = FRAME_MS * 5;
 
-  let stepped = false;
-  while (accumulator >= FRAME_MS) {
+  if (accumulator >= FRAME_MS) {
     update();
-    accumulator -= FRAME_MS;
-    stepped = true;
-  }
-
-  if (stepped) {
+    accumulator %= FRAME_MS;
     render();
     paintMenu();
   }

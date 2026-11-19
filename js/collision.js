@@ -1,6 +1,6 @@
-import { COLS, ROWS } from "./config.js?v=132";
-import { MAP, areaIndex, buildingAt, bushAt, treeAt } from "./world.js?v=132";
-import { barbarian } from "./enemies.js?v=132";
+import { COLS, ROWS } from "./config.js?v=151";
+import { MAP, areaIndex, buildingAt, bushAt, treeAt } from "./world.js?v=151";
+import { barbarian } from "./enemies.js?v=151";
 
 export function blockedCell(x, y, player, npcs, ignoreNpc) {
   if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return true;
