@@ -1,4 +1,4 @@
-import { CELL } from "./config.js?v=156";
+import { CELL } from "./config.js?v=157";
 
 const SLIDE = 2;
 const WALK_FRAMES = 4;
