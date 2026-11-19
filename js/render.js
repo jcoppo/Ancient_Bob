@@ -41,7 +41,7 @@ const PLAYER_WALK_COLUMNS = [1, 0, 2, 0];
 const PLAYER_FRAME_Y = { down: 0, right: 23, left: 46, up: 69 };
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
-  "../assets/images/player5/player5_sheet.png?v=149",
+  "../assets/images/player/player_walk_sheet.png?v=150",
   import.meta.url,
 ).href;
 
