@@ -32,19 +32,12 @@ const TILLED_TILE_IMAGES = Array.from(
   (_, index) => loadTileImage(`soil_transition_${index + 1}`),
 );
 
-const PLAYER_SHEET_CELL = 32;
-const PLAYER_IDLE_COLUMN = 0;
-const PLAYER_WALK_COLUMNS = [1, 0, 2, 0];
-const PLAYER_SHEET_ROWS = { up: 0, left: 1, down: 2, right: 3 };
-const PLAYER_FRAME_BOUNDS = [
-  [[9, 5, 23, 31], [8, 4, 23, 31], [9, 4, 24, 31]],
-  [[9, 5, 22, 30], [8, 5, 23, 30], [8, 5, 23, 30]],
-  [[9, 4, 23, 30], [9, 4, 22, 30], [8, 4, 23, 30]],
-  [[9, 4, 23, 29], [8, 4, 22, 29], [7, 4, 22, 29]],
-];
+const PLAYER_FRAME_WIDTH = 13;
+const PLAYER_FRAME_HEIGHT = 16;
+const PLAYER_FRAME_Y = { down: 0, right: 23, left: 46, up: 69 };
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
-  "../assets/images/player4.0/player4.png?v=134",
+  "../assets/images/player5/player5_sheet.png?v=139",
   import.meta.url,
 ).href;
 
@@ -415,29 +408,20 @@ function drawCharacter(person, palette, originX = person.x * CELL, originY = per
   drawSprite(sprite, palette, originX, originY, !person.dead && person.facing === "right");
 }
 
-function drawPlayerCharacter(originX, originY, moving, frame) {
+function drawPlayerCharacter(originX, originY) {
   if (!playerSpriteSheet.complete || !playerSpriteSheet.naturalWidth) return;
-  const row = PLAYER_SHEET_ROWS[player.facing] ?? PLAYER_SHEET_ROWS.down;
-  const column = moving
-    ? PLAYER_WALK_COLUMNS[frame % PLAYER_WALK_COLUMNS.length]
-    : PLAYER_IDLE_COLUMN;
-  const [left, top, right, bottom] = PLAYER_FRAME_BOUNDS[row][column];
-  const sourceWidth = right - left;
-  const sourceHeight = bottom - top;
-  const drawWidth = sourceWidth;
-  const drawHeight = sourceHeight;
-  const horizontalOffset = Math.floor((CELL - drawWidth) / 2);
-  const baselineY = originY + CELL - drawHeight;
+  const frameY = PLAYER_FRAME_Y[player.facing] ?? PLAYER_FRAME_Y.down;
+  const horizontalOffset = Math.floor((CELL - PLAYER_FRAME_WIDTH) / 2);
   ctx.drawImage(
     playerSpriteSheet,
-    column * PLAYER_SHEET_CELL + left,
-    row * PLAYER_SHEET_CELL + top,
-    sourceWidth,
-    sourceHeight,
+    0,
+    frameY,
+    PLAYER_FRAME_WIDTH,
+    PLAYER_FRAME_HEIGHT,
     originX + horizontalOffset,
-    baselineY,
-    drawWidth,
-    drawHeight,
+    originY,
+    PLAYER_FRAME_WIDTH,
+    PLAYER_FRAME_HEIGHT,
   );
 }
 
@@ -670,13 +654,7 @@ function drawPlayer(slideX, slideY) {
   if (hoe && hoeBehind) drawHeldHoe(slideX, slideY, hoe);
   if (bag && bagBehind) drawHeldBag(slideX, slideY, bag);
   if (wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
-  const playerMoving = player.step > 0;
-  drawPlayerCharacter(
-    slideX,
-    slideY,
-    playerMoving,
-    playerMoving ? player.walk : 0,
-  );
+  drawPlayerCharacter(slideX, slideY);
   if (pose && pose.frame >= 0) drawSlash(pose.x, pose.y, pose.facing, pose.frame);
   if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   if (hoe && !hoeBehind) drawHeldHoe(slideX, slideY, hoe);
