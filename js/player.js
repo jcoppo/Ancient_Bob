@@ -1,7 +1,9 @@
-import { CELL } from "./config.js?v=111";
-import { FARM_SPRITES, FARM_WALK } from "./pixels.js?v=111";
+import { CELL } from "./config.js?v=116";
 
 const SLIDE = 2;
+const WALK_FRAMES = 6;
+const IDLE_FRAMES = 6;
+const IDLE_FRAME_TICKS = 10;
 
 export const player = {
   x: 7,
@@ -11,11 +13,11 @@ export const player = {
   dy: 0,
   step: 0,
   walk: 0,
+  idleFrame: 0,
+  idleClock: 0,
   wrap: false,
   hp: 5,
   maxHp: 5,
-  sprites: FARM_SPRITES,
-  walkSprites: FARM_WALK,
 };
 
 export function resetPlayer() {
@@ -26,6 +28,8 @@ export function resetPlayer() {
   player.dy = 0;
   player.step = 0;
   player.walk = 0;
+  player.idleFrame = 0;
+  player.idleClock = 0;
   player.wrap = false;
   player.maxHp = 5;
   player.hp = player.maxHp;
@@ -40,12 +44,21 @@ export function healPlayer(amount) {
   player.hp = Math.min(5, player.hp + amount);
 }
 
+function advanceIdle() {
+  player.idleClock += 1;
+  if (player.idleClock < IDLE_FRAME_TICKS) return;
+  player.idleClock = 0;
+  player.idleFrame = (player.idleFrame + 1) % IDLE_FRAMES;
+}
+
 export function updatePlayer(dir, tryStep) {
   let continuing = false;
 
   if (player.step > 0) {
+    player.idleFrame = 0;
+    player.idleClock = 0;
     player.step += SLIDE;
-    if (player.step % (CELL / 2) === 0) player.walk ^= 1;
+    if (player.step % (CELL / 2) === 0) player.walk = (player.walk + 1) % WALK_FRAMES;
     if (player.step < CELL) return;
 
     if (!player.wrap) {
@@ -61,15 +74,21 @@ export function updatePlayer(dir, tryStep) {
 
   if (!dir) {
     player.walk = 0;
+    advanceIdle();
     return;
   }
 
   const [dx, dy, facing] = dir;
   player.facing = facing;
-  if (!tryStep(dx, dy)) return;
+  if (!tryStep(dx, dy)) {
+    advanceIdle();
+    return;
+  }
 
   player.dx = dx;
   player.dy = dy;
   player.step = SLIDE;
-  if (!continuing) player.walk = 1;
+  player.idleFrame = 0;
+  player.idleClock = 0;
+  if (!continuing) player.walk = 0;
 }

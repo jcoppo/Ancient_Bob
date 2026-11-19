@@ -1,15 +1,3 @@
-export const PALETTE = {
-  H: "#6b4228",
-  S: "#f0c09a",
-  E: "#1c1410",
-  M: "#c4846a",
-  T: "#efe6d4",
-  B: "#6b4630",
-  G: "#d4cbb8",
-  L: "#e4b48c",
-  K: "#5c3c28",
-};
-
 export const FARMER_PALETTE = {
   H: "#e2c15a",
   S: "#f0c09a",
