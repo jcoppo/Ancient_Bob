@@ -333,11 +333,15 @@ export function paintMenu() {
 const MAP_LABEL = 16;
 
 function mapSpan(areas) {
-  const cols = Math.max(...areas.map((area) => area.col)) + 1;
-  const rows = Math.max(...areas.map((area) => area.row)) + 1;
+  const minCol = Math.min(...areas.map((area) => area.col));
+  const minRow = Math.min(...areas.map((area) => area.row));
+  const cols = Math.max(...areas.map((area) => area.col)) - minCol + 1;
+  const rows = Math.max(...areas.map((area) => area.row)) - minRow + 1;
   const blockW = COLS * CELL_PX;
   const blockH = MAP_LABEL + ROWS * CELL_PX;
   return {
+    minCol,
+    minRow,
     cols,
     rows,
     blockW,
@@ -367,8 +371,8 @@ function drawMap() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   areaList().forEach((area, areaNumber) => {
-    const ox = area.col * (span.blockW + MAP_GAP);
-    const oy = area.row * (span.blockH + MAP_GAP);
+    const ox = (area.col - span.minCol) * (span.blockW + MAP_GAP);
+    const oy = (area.row - span.minRow) * (span.blockH + MAP_GAP);
     ctx.fillStyle = areaNumber === areaIndex ? "#e6c15a" : "#a89880";
     ctx.fillText(area.name.toUpperCase(), ox + span.blockW / 2, oy + MAP_LABEL / 2);
     for (let y = 0; y < ROWS; y++) {

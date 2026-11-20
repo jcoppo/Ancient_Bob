@@ -151,16 +151,122 @@ const RIDGE_MAP = [
 
 const RIDGE_BUSHES = Array.from({ length: 20 }, () => "....................");
 
+function shoreRoll(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+function makeShore() {
+  const rand = shoreRoll(0xA11CE);
+  const cells = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => "g"));
+  for (let y = 0; y <= 6; y++) cells[y][COLS - 1] = "w";
+  for (let walk = 0; walk < 18; walk++) {
+    let x = COLS - 1;
+    let y = Math.floor(rand() * 7);
+    const steps = 10 + Math.floor(rand() * 16);
+    for (let step = 0; step < steps; step++) {
+      if (x < COLS - 1) cells[y][x] = "w";
+      const roll = rand();
+      if (roll < 0.42) x = Math.max(0, x - 1);
+      else if (roll < 0.68) y = Math.min(ROWS - 1, y + 1);
+      else if (roll < 0.9) y = Math.max(0, y - 1);
+      else x = Math.min(COLS - 2, x + 1);
+    }
+  }
+  const grown = cells.map((row) => row.slice());
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS - 1; x++) {
+      if (cells[y][x] === "w") continue;
+      let wet = 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (ny >= 0 && ny < ROWS && nx >= 0 && nx < COLS && cells[ny][nx] === "w") wet += 1;
+      }
+      if (wet >= 3) grown[y][x] = "w";
+    }
+  }
+  for (let y = 0; y < ROWS; y++) grown[y][COLS - 1] = y <= 6 ? "w" : "g";
+
+  const grass = (x, y) => y >= 0 && y < ROWS && x >= 0 && x < COLS - 1 && grown[y][x] === "g";
+  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const pick = (zones, ok) => {
+    for (const [x0, x1, y0, y1] of zones) {
+      for (let attempt = 0; attempt < 30; attempt++) {
+        const x = x0 + Math.floor(rand() * (x1 - x0));
+        const y = y0 + Math.floor(rand() * (y1 - y0));
+        if (ok(x, y)) return [x, y];
+      }
+    }
+    return null;
+  };
+  const grow = (spot, size, ok, place) => {
+    const pile = [spot];
+    place(spot[0], spot[1]);
+    for (let n = 1; n < size; n++) {
+      const [sx, sy] = pile[Math.floor(rand() * pile.length)];
+      const steps = dirs.slice();
+      for (let i = steps.length - 1; i > 0; i--) {
+        const j = Math.floor(rand() * (i + 1));
+        [steps[i], steps[j]] = [steps[j], steps[i]];
+      }
+      const step = steps.find(([dx, dy]) => ok(sx + dx, sy + dy));
+      if (!step) break;
+      const nx = sx + step[0];
+      const ny = sy + step[1];
+      place(nx, ny);
+      pile.push([nx, ny]);
+    }
+  };
+
+  for (const zone of [[1, 8, 1, 8], [1, 8, 12, 19], [10, 18, 14, 19], [6, 14, 10, 15]]) {
+    const spot = pick([zone], grass);
+    if (spot) grow(spot, 4 + Math.floor(rand() * 5), grass, (x, y) => { grown[y][x] = "r"; });
+  }
+
+  const bushRows = Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => "."));
+  const bushOk = (x, y) => grass(x, y) && bushRows[y][x] === ".";
+  for (const zone of [[1, 8, 0, 7], [1, 9, 8, 13], [10, 18, 8, 14], [1, 8, 14, 19], [9, 17, 15, 19]]) {
+    const spot = pick([zone], bushOk);
+    if (spot) grow(spot, 3 + Math.floor(rand() * 4), bushOk, (x, y) => { bushRows[y][x] = "b"; });
+  }
+
+  const trees = [];
+  const kinds = ["oak", "pine", "round"];
+  const treeOk = (x, y) => bushOk(x, y) && trees.every((tree) => Math.abs(tree.x - x) + Math.abs(tree.y - y) >= 4);
+  for (const zone of [[2, 8, 2, 8], [2, 8, 10, 18], [10, 17, 1, 8], [10, 17, 12, 18], [5, 12, 8, 14], [1, 6, 14, 19]]) {
+    const spot = pick([zone], treeOk);
+    if (spot) trees.push({ kind: kinds[trees.length % kinds.length], x: spot[0], y: spot[1] });
+  }
+
+  // Close the one-tile grass bridge at column 12, row 9. The water notch above it becomes grass.
+  grown[7][11] = "g";
+  grown[7][12] = "g";
+
+  return {
+    map: grown.map((row) => row.join("")),
+    bushes: bushRows.map((row) => row.join("")),
+    trees,
+  };
+}
+
+const SHORE = makeShore();
+
 const AREAS = [
   { name: "Village", col: 0, row: 1, map: VILLAGE_MAP, bushes: VILLAGE_BUSHES, buildings: VILLAGE_BUILDINGS, trees: VILLAGE_TREES },
   { name: "Meadow", col: 1, row: 1, map: MEADOW_MAP, bushes: MEADOW_BUSHES, buildings: [], trees: MEADOW_TREES },
   { name: "Ridge", col: 0, row: 0, map: RIDGE_MAP, bushes: RIDGE_BUSHES, buildings: [], trees: [] },
+  { name: "Shore", col: -1, row: 1, map: SHORE.map, bushes: SHORE.bushes, buildings: [], trees: SHORE.trees },
 ];
 
 const AREA_LINKS = [
-  { east: 1, north: 2 },
+  { east: 1, north: 2, west: 3 },
   { west: 0 },
   { south: 0 },
+  { east: 0 },
 ];
 
 export function areaNeighbor(dx, dy) {
@@ -232,6 +338,14 @@ export function applySavedTerrain(saved) {
     }
     AREAS[2].map[y] = saved;
   });
+  const shoreRow = AREAS[3]?.map[7];
+  if (shoreRow) {
+    let row = shoreRow;
+    for (const x of [11, 12]) {
+      if (row[x] === "w") row = row.slice(0, x) + "g" + row.slice(x + 1);
+    }
+    AREAS[3].map[7] = row;
+  }
   paintTiles(AREAS[1].map, MEADOW_CLEARED, "s", "g");
   stampSoil(AREAS[1].map, MEADOW_SOIL);
   const bushRow = AREAS[1].bushes[11];
