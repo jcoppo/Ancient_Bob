@@ -147,6 +147,12 @@ const FARM_TILL = 10;
 const FARM_STEP = 8;
 const FARM_GAP = 10;
 
+function holdWait(npc) {
+  if (!npc.holding) return FARM_STEP;
+  npc.carryClock = ((npc.carryClock ?? 0) + 1) % 3;
+  return FARM_STEP + (npc.carryClock === 0 ? 2 : 3);
+}
+
 function farmStep(npc, tx, ty) {
   const dx = Math.sign(tx - npc.x);
   const dy = Math.sign(ty - npc.y);
@@ -214,7 +220,7 @@ function updateFarmer(npc) {
   npc.x += step[0];
   npc.y += step[1];
   npc.facing = faceStep(step[0], step[1]);
-  npc.wait = npc.holding ? FARM_STEP + 1 : FARM_STEP;
+  npc.wait = holdWait(npc);
 }
 
 function updateBaker(npc) {

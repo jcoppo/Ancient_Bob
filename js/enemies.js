@@ -10,9 +10,14 @@ const RIDGE = 2;
 const SLIDE = 2;
 
 function moveStep() {
-  if (!barbarian.holding) return SLIDE;
-  barbarian.carryClock = (barbarian.carryClock + 1) % 4;
-  return barbarian.carryClock === 0 ? 1 : SLIDE;
+  if (!barbarian.holding) {
+    barbarian.carryBank = 0;
+    return SLIDE;
+  }
+  barbarian.carryBank += 3;
+  const step = Math.min(CELL - barbarian.step, Math.floor(barbarian.carryBank / 2));
+  barbarian.carryBank -= step * 2;
+  return step;
 }
 
 let gait = "run";
@@ -53,7 +58,7 @@ export const barbarian = {
   dy: 0,
   step: 0,
   walk: 0,
-  carryClock: 0,
+  carryBank: 0,
   arrive: 0,
   entered: true,
   attack: { frame: -1, facing: "left", x: 0, y: 0 },

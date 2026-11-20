@@ -3,9 +3,14 @@ import { CELL } from "./config.js";
 const SLIDE = 2;
 
 function moveStep() {
-  if (!player.holding) return SLIDE;
-  player.carryClock = (player.carryClock + 1) % 4;
-  return player.carryClock === 0 ? 1 : SLIDE;
+  if (!player.holding) {
+    player.carryBank = 0;
+    return SLIDE;
+  }
+  player.carryBank += 3;
+  const step = Math.min(CELL - player.step, Math.floor(player.carryBank / 2));
+  player.carryBank -= step * 2;
+  return step;
 }
 const WALK_FRAMES = 4;
 const WALK_FRAME_TICKS = 6;
@@ -20,7 +25,7 @@ export const player = {
   walking: false,
   walk: 0,
   walkClock: 0,
-  carryClock: 0,
+  carryBank: 0,
   wrap: false,
   hp: 10,
   maxHp: 10,
@@ -36,7 +41,7 @@ export function resetPlayer() {
   player.walking = false;
   player.walk = 0;
   player.walkClock = 0;
-  player.carryClock = 0;
+  player.carryBank = 0;
   player.wrap = false;
   player.maxHp = 10;
   player.hp = player.maxHp;
