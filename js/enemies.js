@@ -14,12 +14,32 @@ function moveStep() {
   barbarian.carryClock = (barbarian.carryClock + 1) % 4;
   return barbarian.carryClock === 0 ? 1 : SLIDE;
 }
+
+let gait = "run";
+let walkBank = 0;
+
+function travelStep() {
+  const run = moveStep();
+  if (gait !== "walk") return run;
+  walkBank += run;
+  const pay = Math.floor(walkBank / 2);
+  walkBank -= pay * 2;
+  return pay;
+}
 const SLASH_FRAMES = 6;
 const GUESS_TILES = 8;
+
+const DIRS = {
+  up: [0, -1],
+  down: [0, 1],
+  left: [-1, 0],
+  right: [1, 0],
+};
 
 let searching = false;
 let saw = null;
 let hunt = null;
+let idle = null;
 
 export const barbarian = {
   x: 12,
@@ -91,7 +111,65 @@ function guessSpot(x, y, dx, dy) {
 function giveUp() {
   searching = false;
   hunt = null;
+  idle = null;
   barbarian.walk = 0;
+}
+
+function openFacing() {
+  const crowd = NPCS.concat(barbarian);
+  const open = Object.keys(DIRS).filter((facing) => {
+    const [sx, sy] = DIRS[facing];
+    return !blockedCell(barbarian.x + sx, barbarian.y + sy, player, crowd, barbarian);
+  });
+  if (open.length === 0) return null;
+  return open[Math.floor(Math.random() * open.length)];
+}
+
+function chooseIdle() {
+  const roll = Math.random();
+  if (roll < 0.4) {
+    idle = { kind: "wait", ticks: 20 + Math.floor(Math.random() * 80) };
+    return;
+  }
+  if (roll < 0.65) {
+    const options = Object.keys(DIRS).filter((facing) => facing !== barbarian.facing);
+    barbarian.facing = options[Math.floor(Math.random() * options.length)];
+    barbarian.walk = 0;
+    idle = { kind: "wait", ticks: 12 + Math.floor(Math.random() * 50) };
+    return;
+  }
+  const facing = openFacing();
+  if (!facing) {
+    idle = { kind: "wait", ticks: 20 + Math.floor(Math.random() * 40) };
+    return;
+  }
+  idle = { kind: "walk", facing, tiles: 1 + Math.floor(Math.random() * 4) };
+}
+
+function wander(continuing) {
+  if (!idle) chooseIdle();
+  if (idle.kind === "wait") {
+    barbarian.walk = 0;
+    idle.ticks -= 1;
+    if (idle.ticks <= 0) idle = null;
+    return;
+  }
+  const [sx, sy] = DIRS[idle.facing];
+  const crowd = NPCS.concat(barbarian);
+  if (idle.tiles <= 0 || blockedCell(barbarian.x + sx, barbarian.y + sy, player, crowd, barbarian)) {
+    idle = null;
+    barbarian.walk = 0;
+    return;
+  }
+  gait = "walk";
+  const step = travelStep();
+  if (step === 0) return;
+  barbarian.facing = idle.facing;
+  barbarian.dx = sx;
+  barbarian.dy = sy;
+  barbarian.step = step;
+  if (!continuing) barbarian.walk = 1;
+  idle.tiles -= 1;
 }
 
 function walkToward(tx, ty, continuing) {
@@ -101,10 +179,11 @@ function walkToward(tx, ty, continuing) {
     barbarian.walk = 0;
     return "stuck";
   }
+  gait = "run";
   barbarian.facing = step[2];
   barbarian.dx = step[0];
   barbarian.dy = step[1];
-  barbarian.step = moveStep();
+  barbarian.step = travelStep();
   if (!continuing) barbarian.walk = 1;
   return "moving";
 }
@@ -149,10 +228,11 @@ function beginEntrance() {
     if (blockedCell(COLS - 1, y, player, crowd, barbarian)) continue;
     barbarian.x = COLS;
     barbarian.y = y;
+    gait = "run";
     barbarian.facing = "left";
     barbarian.dx = -1;
     barbarian.dy = 0;
-    barbarian.step = moveStep();
+    barbarian.step = travelStep();
     barbarian.walk = 1;
     return true;
   }
@@ -190,8 +270,11 @@ export function updateBarbarian() {
 
   let continuing = false;
   if (barbarian.step > 0) {
-    barbarian.step = Math.min(CELL, barbarian.step + moveStep());
-    if (barbarian.step % (CELL / 2) === 0) barbarian.walk ^= 1;
+    const step = travelStep();
+    if (step > 0) {
+      barbarian.step = Math.min(CELL, barbarian.step + step);
+      if (barbarian.step % (CELL / 2) === 0) barbarian.walk ^= 1;
+    }
     if (barbarian.step < CELL) return;
     barbarian.x += barbarian.dx;
     barbarian.y += barbarian.dy;
@@ -205,6 +288,7 @@ export function updateBarbarian() {
   const dy = player.y - barbarian.y;
   if (sees(player.x, player.y)) {
     searching = true;
+    idle = null;
     if (!saw) saw = { x: player.x, y: player.y, dx: 0, dy: 0 };
     saw.x = player.x;
     saw.y = player.y;
@@ -222,7 +306,7 @@ export function updateBarbarian() {
   }
 
   if (!searching || !saw) {
-    barbarian.walk = 0;
+    wander(continuing);
     return;
   }
 
