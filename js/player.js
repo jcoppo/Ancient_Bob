@@ -1,15 +1,40 @@
 import { CELL } from "./config.js";
+import { MAP } from "./world.js";
 
 const SLIDE = 2;
 
+export function playerInWater() {
+  if (MAP[player.y]?.[player.x] === "w") return true;
+  if (!player.wrap && (player.step > 0 || player.dx || player.dy)) {
+    return MAP[player.y + player.dy]?.[player.x + player.dx] === "w";
+  }
+  return false;
+}
+
 function moveStep() {
+  if (!playerInWater()) {
+    player.swimBank = 0;
+    if (!player.holding) {
+      player.carryBank = 0;
+      return SLIDE;
+    }
+    player.carryBank += 3;
+    const step = Math.min(CELL - player.step, Math.floor(player.carryBank / 2));
+    player.carryBank -= step * 2;
+    return step;
+  }
+  let pace;
   if (!player.holding) {
     player.carryBank = 0;
-    return SLIDE;
+    pace = SLIDE;
+  } else {
+    player.carryBank += 3;
+    pace = Math.floor(player.carryBank / 2);
+    player.carryBank -= pace * 2;
   }
-  player.carryBank += 3;
-  const step = Math.min(CELL - player.step, Math.floor(player.carryBank / 2));
-  player.carryBank -= step * 2;
+  player.swimBank += pace;
+  const step = Math.min(CELL - player.step, Math.floor(player.swimBank / 2));
+  player.swimBank -= step * 2;
   return step;
 }
 const WALK_FRAMES = 4;
@@ -26,6 +51,7 @@ export const player = {
   walk: 0,
   walkClock: 0,
   carryBank: 0,
+  swimBank: 0,
   wrap: false,
   hp: 10,
   maxHp: 10,
@@ -42,6 +68,7 @@ export function resetPlayer() {
   player.walk = 0;
   player.walkClock = 0;
   player.carryBank = 0;
+  player.swimBank = 0;
   player.wrap = false;
   player.maxHp = 10;
   player.hp = player.maxHp;
@@ -57,7 +84,8 @@ export function healPlayer(amount) {
 }
 
 function advanceWalk() {
-  player.walkClock += player.holding ? 0.75 : 1;
+  const rate = player.holding ? 0.75 : 1;
+  player.walkClock += playerInWater() ? rate * 0.5 : rate;
   if (player.walkClock >= WALK_FRAME_TICKS) {
     player.walkClock -= WALK_FRAME_TICKS;
     player.walk = (player.walk + 1) % WALK_FRAMES;

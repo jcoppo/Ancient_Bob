@@ -255,18 +255,45 @@ function makeShore() {
 
 const SHORE = makeShore();
 
+const BAY_MAP = [
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwgggwwwwwwwwwwwwwww",
+  "wwggggwwwwwwwwwwwwww",
+  "wwwggwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwgwwwwwwwwwwwww",
+  "wwwwwgggwwwwwwwwwwww",
+  "wwwwwggggwwwwwwwwwww",
+  "wwwwwwgggwwwwwwwwwww",
+];
+
+const BAY_BUSHES = Array.from({ length: ROWS }, () => ".".repeat(COLS));
+
 const AREAS = [
   { name: "Village", col: 0, row: 1, map: VILLAGE_MAP, bushes: VILLAGE_BUSHES, buildings: VILLAGE_BUILDINGS, trees: VILLAGE_TREES },
   { name: "Meadow", col: 1, row: 1, map: MEADOW_MAP, bushes: MEADOW_BUSHES, buildings: [], trees: MEADOW_TREES },
   { name: "Ridge", col: 0, row: 0, map: RIDGE_MAP, bushes: RIDGE_BUSHES, buildings: [], trees: [] },
   { name: "Shore", col: -1, row: 1, map: SHORE.map, bushes: SHORE.bushes, buildings: [], trees: SHORE.trees },
+  { name: "Bay", col: -1, row: 0, map: BAY_MAP, bushes: BAY_BUSHES, buildings: [], trees: [] },
 ];
 
 const AREA_LINKS = [
   { east: 1, north: 2, west: 3 },
   { west: 0 },
-  { south: 0 },
-  { east: 0 },
+  { south: 0, west: 4 },
+  { east: 0, north: 4 },
+  { east: 2, south: 3 },
 ];
 
 export function linkedArea(index, dx, dy) {
@@ -450,17 +477,18 @@ function areaAt(index) {
   return AREAS[index];
 }
 
-export function areaTerrainBlocked(index, x, y) {
+export function areaTerrainBlocked(index, x, y, allowWater = false) {
   const area = areaAt(index);
   if (!area || x < 0 || y < 0 || x >= COLS || y >= ROWS) return true;
-  if (area.map[y][x] === "w" || area.map[y][x] === "r" || BUSH_MARKS.includes(area.bushes[y][x])) return true;
+  const mark = area.map[y][x];
+  if (mark === "r" || (!allowWater && mark === "w") || BUSH_MARKS.includes(area.bushes[y][x])) return true;
   if (area.trees.some((tree) => trunkHits(tree, x, y))) return true;
   if (hitsWall(area.buildings, x, y)) return true;
   return false;
 }
 
-export function crossingBlocked(nextIndex, x, y, npcs) {
-  if (areaTerrainBlocked(nextIndex, x, y)) return true;
+export function crossingBlocked(nextIndex, x, y, npcs, allowWater = false) {
+  if (areaTerrainBlocked(nextIndex, x, y, allowWater)) return true;
   if (npcs.some((npc) => (npc.area ?? 0) === nextIndex && npc.x === x && npc.y === y)) return true;
   return false;
 }

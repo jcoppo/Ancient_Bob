@@ -2,7 +2,7 @@ import { CELL, COLS, ROWS } from "./config.js";
 import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js";
 import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js";
 import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js";
-import { player } from "./player.js";
+import { player, playerInWater } from "./player.js";
 import { NPCS } from "./npcs.js";
 import { enemies } from "./enemies.js";
 import { showGrid } from "./input.js";
@@ -78,6 +78,7 @@ const PLAYER_COLUMN_OFFSET = 5;
 const PLAYER_IDLE_COLUMN = 0;
 const PLAYER_WALK_COLUMNS = [1, 0, 2, 0];
 const PLAYER_FRAME_Y = { down: 0, right: 23, left: 46, up: 69 };
+const SWIM_HEAD_ROWS = { down: 9, right: 9, left: 9, up: 8 };
 const bakerImage = new Image();
 bakerImage.src = new URL("../assets/images/baker/baker_still.png", import.meta.url).href;
 
@@ -458,18 +459,22 @@ function drawPlayerCharacter(originX, originY) {
   if (!playerSpriteSheet.complete || !playerSpriteSheet.naturalWidth) return;
   const column = player.walking ? PLAYER_WALK_COLUMNS[player.walk] : PLAYER_IDLE_COLUMN;
   const frameY = PLAYER_FRAME_Y[player.facing] ?? PLAYER_FRAME_Y.down;
-  const horizontalOffset = Math.floor((CELL - PLAYER_FRAME_WIDTH) / 2);
-  const baselineY = originY + CELL - PLAYER_FRAME_HEIGHT;
+  const swimming = playerInWater();
+  const cropH = swimming ? (SWIM_HEAD_ROWS[player.facing] ?? 9) : PLAYER_FRAME_HEIGHT;
+  const destX = originX + Math.floor((CELL - PLAYER_FRAME_WIDTH) / 2);
+  const destY = swimming
+    ? originY + Math.floor((CELL - cropH) / 2)
+    : originY + CELL - PLAYER_FRAME_HEIGHT;
   ctx.drawImage(
     playerSpriteSheet,
     column * PLAYER_COLUMN_WIDTH + PLAYER_COLUMN_OFFSET,
     frameY,
     PLAYER_FRAME_WIDTH,
-    PLAYER_FRAME_HEIGHT,
-    originX + horizontalOffset,
-    baselineY,
+    cropH,
+    destX,
+    destY,
     PLAYER_FRAME_WIDTH,
-    PLAYER_FRAME_HEIGHT,
+    cropH,
   );
 }
 
@@ -702,6 +707,10 @@ function drawGroundItem(item) {
 }
 
 function drawPlayer(slideX, slideY) {
+  if (playerInWater()) {
+    drawPlayerCharacter(slideX, slideY);
+    return;
+  }
   const held = heldItem();
   const pose = held?.kind === "sword" ? swordPose() : null;
   const swordFacing = pose ? (pose.frame >= 0 ? pose.facing : player.facing) : null;

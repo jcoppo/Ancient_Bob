@@ -15,13 +15,13 @@ function tryStep(dx, dy) {
   const ny = player.y + dy;
   if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS) {
     player.wrap = false;
-    return !blockedCell(nx, ny, player, NPCS);
+    return !blockedCell(nx, ny, player, NPCS, null, true);
   }
   const next = areaNeighbor(dx, dy);
   if (next == null) return false;
   const destX = nx < 0 ? COLS - 1 : nx >= COLS ? 0 : nx;
   const destY = ny < 0 ? ROWS - 1 : ny >= ROWS ? 0 : ny;
-  if (crossingBlocked(next, destX, destY, NPCS) || enemyBlocks(next, destX, destY)) return false;
+  if (crossingBlocked(next, destX, destY, NPCS, true) || enemyBlocks(next, destX, destY)) return false;
   enterArea(next);
   player.x = destX;
   player.y = destY;
