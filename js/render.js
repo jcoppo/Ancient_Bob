@@ -28,11 +28,41 @@ const GROUND_TILES = {
 
 const GRASS_TILES = [1, 2, 3, 4].map((n) => loadTileImage(`grass${n}`));
 
+const BEACH_TILES = {
+  w: loadTileImage("grass_beach_w"),
+  e: loadTileImage("grass_beach_e"),
+  n: loadTileImage("grass_beach_n"),
+  s: loadTileImage("grass_beach_s"),
+  nw: loadTileImage("grass_beach_nw"),
+  ne: loadTileImage("grass_beach_ne"),
+  sw: loadTileImage("grass_beach_sw"),
+  se: loadTileImage("grass_beach_se"),
+};
+
 const GRASS_CHOICE = Array.from({ length: ROWS }, () => (
   Array.from({ length: COLS }, () => GRASS_TILES[Math.floor(Math.random() * GRASS_TILES.length)])
 ));
 
+function beachSide(x, y) {
+  if (MAP[y][x] !== "g") return null;
+  const w = x > 0 && MAP[y][x - 1] === "w";
+  const e = x < COLS - 1 && MAP[y][x + 1] === "w";
+  const n = y > 0 && MAP[y - 1][x] === "w";
+  const s = y < ROWS - 1 && MAP[y + 1][x] === "w";
+  if (n && w) return "nw";
+  if (n && e) return "ne";
+  if (s && w) return "sw";
+  if (s && e) return "se";
+  if (w) return "w";
+  if (e) return "e";
+  if (n) return "n";
+  if (s) return "s";
+  return null;
+}
+
 function grassTile(x, y) {
+  const beach = beachSide(x, y);
+  if (beach) return BEACH_TILES[beach];
   return GRASS_CHOICE[y][x];
 }
 
