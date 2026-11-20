@@ -806,7 +806,7 @@ function drawHealth() {
   const barY = y0 + HEART.length + 2;
   const barW = 5 * 6;
   const barH = 3;
-  const filled = Math.round((Math.min(player.hp, 5) / 5) * barW);
+  const filled = Math.round((player.hp / player.maxHp) * barW);
   ctx.fillStyle = "#1a140f";
   ctx.fillRect(x0 - 1, barY - 1, barW + 2, barH + 2);
   ctx.fillStyle = "#3a2e28";
