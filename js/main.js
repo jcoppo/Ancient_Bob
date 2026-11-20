@@ -1,6 +1,6 @@
 import { COLS, FRAME_MS, ROWS } from "./config.js";
 import { NPCS, updateNpcs } from "./npcs.js";
-import { updateBarbarian } from "./enemies.js";
+import { enemyBlocks, updateBarbarian } from "./enemies.js";
 import { player, updatePlayer } from "./player.js";
 import { blockedCell } from "./collision.js";
 import { dialogueIsOpen } from "./dialogue.js";
@@ -21,7 +21,7 @@ function tryStep(dx, dy) {
   if (next == null) return false;
   const destX = nx < 0 ? COLS - 1 : nx >= COLS ? 0 : nx;
   const destY = ny < 0 ? ROWS - 1 : ny >= ROWS ? 0 : ny;
-  if (crossingBlocked(next, destX, destY, NPCS)) return false;
+  if (crossingBlocked(next, destX, destY, NPCS) || enemyBlocks(next, destX, destY)) return false;
   enterArea(next);
   player.x = destX;
   player.y = destY;

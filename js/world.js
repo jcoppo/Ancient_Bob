@@ -269,14 +269,18 @@ const AREA_LINKS = [
   { east: 0 },
 ];
 
-export function areaNeighbor(dx, dy) {
-  const link = AREA_LINKS[areaIndex];
+export function linkedArea(index, dx, dy) {
+  const link = AREA_LINKS[index];
   if (!link) return null;
   if (dx < 0) return link.west ?? null;
   if (dx > 0) return link.east ?? null;
   if (dy < 0) return link.north ?? null;
   if (dy > 0) return link.south ?? null;
   return null;
+}
+
+export function areaNeighbor(dx, dy) {
+  return linkedArea(areaIndex, dx, dy);
 }
 
 export let areaIndex = 0;
@@ -446,12 +450,17 @@ function areaAt(index) {
   return AREAS[index];
 }
 
-export function crossingBlocked(nextIndex, x, y, npcs) {
-  const area = areaAt(nextIndex);
-  if (!area) return true;
+export function areaTerrainBlocked(index, x, y) {
+  const area = areaAt(index);
+  if (!area || x < 0 || y < 0 || x >= COLS || y >= ROWS) return true;
   if (area.map[y][x] === "w" || area.map[y][x] === "r" || BUSH_MARKS.includes(area.bushes[y][x])) return true;
   if (area.trees.some((tree) => trunkHits(tree, x, y))) return true;
   if (hitsWall(area.buildings, x, y)) return true;
+  return false;
+}
+
+export function crossingBlocked(nextIndex, x, y, npcs) {
+  if (areaTerrainBlocked(nextIndex, x, y)) return true;
   if (npcs.some((npc) => (npc.area ?? 0) === nextIndex && npc.x === x && npc.y === y)) return true;
   return false;
 }

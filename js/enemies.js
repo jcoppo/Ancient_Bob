@@ -3,7 +3,7 @@ import { BARBARIAN_PALETTE, HOOD_SPRITES, HOOD_WALK } from "./pixels.js";
 import { hurtPlayer, player } from "./player.js";
 import { NPCS } from "./npcs.js";
 import { blockedCell } from "./collision.js";
-import { areaIndex, buildingAt, bushAt, MAP, treeAt } from "./world.js";
+import { areaIndex, areaList, areaTerrainBlocked, buildingAt, bushAt, linkedArea, MAP, treeAt } from "./world.js";
 
 const BARBARIAN_ACTIVE = true;
 const RIDGE = 2;
@@ -58,6 +58,7 @@ function makeEnemy(area, x, y, facing) {
     entered: true,
     attack: { frame: -1, tick: 0, facing: "left", x: 0, y: 0 },
     alert: null,
+    wrap: false,
     gait: "run",
     walkBank: 0,
     searching: false,
@@ -203,9 +204,9 @@ function wander(enemy, continuing) {
   enemy.idle.tiles -= 1;
 }
 
-function walkToward(enemy, tx, ty, continuing) {
+function walkToward(enemy, tx, ty, continuing, blocked) {
   if (enemy.x === tx && enemy.y === ty) return "arrived";
-  const step = stepToward(enemy, tx, ty);
+  const step = stepToward(enemy, tx, ty, blocked);
   if (!step) {
     enemy.walk = 0;
     return "stuck";
@@ -214,6 +215,7 @@ function walkToward(enemy, tx, ty, continuing) {
   enemy.facing = step[2];
   enemy.dx = step[0];
   enemy.dy = step[1];
+  enemy.wrap = false;
   enemy.step = travelStep(enemy);
   if (!continuing) enemy.walk = 1;
   return "moving";
@@ -225,7 +227,7 @@ function facingOf(dx, dy) {
   return "down";
 }
 
-function stepToward(enemy, tx, ty) {
+function stepToward(enemy, tx, ty, blocked) {
   const dx = Math.sign(tx - enemy.x);
   const dy = Math.sign(ty - enemy.y);
   const xFirst = Math.abs(tx - enemy.x) >= Math.abs(ty - enemy.y);
@@ -233,13 +235,154 @@ function stepToward(enemy, tx, ty) {
   if (dx && xFirst) options.push([dx, 0]);
   if (dy) options.push([0, dy]);
   if (dx && !xFirst) options.push([dx, 0]);
-  const people = crowd();
+  const hit = blocked || ((x, y) => blockedCell(x, y, player, crowd(), enemy));
   for (const [sx, sy] of options) {
-    if (!blockedCell(enemy.x + sx, enemy.y + sy, player, people, enemy)) {
-      return [sx, sy, facingOf(sx, sy)];
+    if (!hit(enemy.x + sx, enemy.y + sy)) return [sx, sy, facingOf(sx, sy)];
+  }
+  return null;
+}
+
+function occupied(index, x, y, enemy) {
+  if (index === areaIndex) {
+    if (player.x === x && player.y === y) return true;
+    if (player.step > 0 && !player.wrap && player.x + player.dx === x && player.y + player.dy === y) return true;
+  }
+  for (const other of enemies) {
+    if (other === enemy || other.area !== index) continue;
+    if (other.x === x && other.y === y) return true;
+    if (other.step > 0 && !other.wrap && other.x + other.dx === x && other.y + other.dy === y) return true;
+  }
+  return NPCS.some((npc) => (npc.area ?? 0) === index && npc.x === x && npc.y === y);
+}
+
+export function enemyBlocks(index, x, y) {
+  return occupied(index, x, y, null);
+}
+
+function localBlocked(enemy, x, y) {
+  return areaTerrainBlocked(enemy.area, x, y) || occupied(enemy.area, x, y, enemy);
+}
+
+function neighborToward(fromIndex, toIndex) {
+  const from = areaList()[fromIndex];
+  const to = areaList()[toIndex];
+  if (!from || !to || fromIndex === toIndex) return null;
+  const col = to.col - from.col;
+  const row = to.row - from.row;
+  const attempts = Math.abs(col) >= Math.abs(row)
+    ? [[Math.sign(col), 0], [0, Math.sign(row)]]
+    : [[0, Math.sign(row)], [Math.sign(col), 0]];
+  for (const [dx, dy] of attempts) {
+    if (!dx && !dy) continue;
+    const index = linkedArea(fromIndex, dx, dy);
+    if (index != null) return { index, dx, dy };
+  }
+  return null;
+}
+
+function exitCells(enemy, next) {
+  const cells = [];
+  if (next.dx !== 0) {
+    const x = next.dx < 0 ? 0 : COLS - 1;
+    const destX = next.dx < 0 ? COLS - 1 : 0;
+    for (let y = 0; y < ROWS; y++) {
+      if (areaTerrainBlocked(enemy.area, x, y) || areaTerrainBlocked(next.index, destX, y)) continue;
+      if (occupied(next.index, destX, y, enemy)) continue;
+      cells.push([x, y]);
+    }
+  } else {
+    const y = next.dy < 0 ? 0 : ROWS - 1;
+    const destY = next.dy < 0 ? ROWS - 1 : 0;
+    for (let x = 0; x < COLS; x++) {
+      if (areaTerrainBlocked(enemy.area, x, y) || areaTerrainBlocked(next.index, x, destY)) continue;
+      if (occupied(next.index, x, destY, enemy)) continue;
+      cells.push([x, y]);
+    }
+  }
+  cells.sort((a, b) => (
+    Math.abs(a[0] - enemy.x) + Math.abs(a[1] - enemy.y)
+    - (Math.abs(b[0] - enemy.x) + Math.abs(b[1] - enemy.y))
+  ));
+  return cells;
+}
+
+function startCross(enemy, next, destX, destY, continuing) {
+  enemy.area = next.index;
+  enemy.x = destX;
+  enemy.y = destY;
+  enemy.gait = "run";
+  enemy.facing = facingOf(next.dx, next.dy);
+  enemy.dx = next.dx;
+  enemy.dy = next.dy;
+  enemy.wrap = true;
+  enemy.hunt = null;
+  enemy.saw = next.index === areaIndex
+    ? { x: player.x, y: player.y, dx: player.dx || 0, dy: player.dy || 0 }
+    : null;
+  const step = travelStep(enemy);
+  if (step === 0) {
+    enemy.wrap = false;
+    enemy.dx = 0;
+    enemy.dy = 0;
+    return;
+  }
+  enemy.step = step;
+  if (!continuing) enemy.walk = 1;
+}
+
+function firstStepToward(enemy, goals, blocked) {
+  const start = enemy.y * COLS + enemy.x;
+  const goalSet = new Set(goals.map(([x, y]) => y * COLS + x));
+  if (goalSet.has(start)) return { x: enemy.x, y: enemy.y };
+  const prev = new Map([[start, -1]]);
+  const queue = [start];
+  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  while (queue.length) {
+    const cur = queue.shift();
+    const x = cur % COLS;
+    const y = Math.floor(cur / COLS);
+    for (const [dx, dy] of dirs) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) continue;
+      const key = ny * COLS + nx;
+      if (prev.has(key) || blocked(nx, ny)) continue;
+      prev.set(key, cur);
+      if (goalSet.has(key)) {
+        let step = key;
+        while (prev.get(step) !== start) step = prev.get(step);
+        return { x: step % COLS, y: Math.floor(step / COLS) };
+      }
+      queue.push(key);
     }
   }
   return null;
+}
+
+function pursueAcross(enemy, continuing) {
+  const next = neighborToward(enemy.area, areaIndex);
+  if (!next) {
+    giveUp(enemy);
+    return;
+  }
+  const exits = exitCells(enemy, next);
+  if (exits.length === 0) {
+    enemy.walk = 0;
+    return;
+  }
+  if (exits.some(([x, y]) => x === enemy.x && y === enemy.y)) {
+    const destX = next.dx < 0 ? COLS - 1 : next.dx > 0 ? 0 : enemy.x;
+    const destY = next.dy < 0 ? ROWS - 1 : next.dy > 0 ? 0 : enemy.y;
+    startCross(enemy, next, destX, destY, continuing);
+    return;
+  }
+  const blocked = (x, y) => localBlocked(enemy, x, y);
+  const step = firstStepToward(enemy, exits, blocked);
+  if (!step) {
+    enemy.walk = 0;
+    return;
+  }
+  walkToward(enemy, step.x, step.y, continuing, blocked);
 }
 
 function strike(enemy) {
@@ -290,16 +433,22 @@ function updateEnemy(enemy) {
     enemy.entered = true;
     return;
   }
-  if (areaIndex !== enemy.area) return;
-  tickAlert(enemy);
-  if (enemy.alert) {
-    const dx = player.x - enemy.x;
-    const dy = player.y - enemy.y;
-    if (sees(enemy, player.x, player.y)) enemy.facing = facingOf(dx, dy);
-    enemy.walk = 0;
-    return;
+  const home = areaIndex === enemy.area;
+  if (!home && !enemy.searching && enemy.step === 0) return;
+  if (home) {
+    tickAlert(enemy);
+    if (enemy.alert) {
+      const dx = player.x - enemy.x;
+      const dy = player.y - enemy.y;
+      if (sees(enemy, player.x, player.y)) enemy.facing = facingOf(dx, dy);
+      enemy.walk = 0;
+      return;
+    }
+  } else if (enemy.alert) {
+    enemy.alert = null;
   }
   const attack = enemy.attack;
+  if (!home && attack.frame >= 0) attack.frame = -1;
   if (attack.frame >= 0) {
     attack.tick += 1;
     if (attack.tick % 2 !== 0) return;
@@ -317,12 +466,20 @@ function updateEnemy(enemy) {
       if (enemy.step % (CELL / 2) === 0) enemy.walk ^= 1;
     }
     if (enemy.step < CELL) return;
-    enemy.x += enemy.dx;
-    enemy.y += enemy.dy;
+    if (!enemy.wrap) {
+      enemy.x += enemy.dx;
+      enemy.y += enemy.dy;
+    }
     enemy.step = 0;
     enemy.dx = 0;
     enemy.dy = 0;
+    enemy.wrap = false;
     continuing = true;
+  }
+
+  if (areaIndex !== enemy.area) {
+    pursueAcross(enemy, continuing);
+    return;
   }
 
   const dx = player.x - enemy.x;

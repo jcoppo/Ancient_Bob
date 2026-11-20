@@ -677,8 +677,8 @@ function drawBarbarian(enemy) {
   const pose = attack.frame < 0
     ? { facing: enemy.facing, aimed: false, frame: -1 }
     : { facing: attack.facing, aimed: attack.frame <= 3, frame: attack.frame };
-  const x = enemy.x * CELL + enemy.dx * enemy.step;
-  const y = enemy.y * CELL + enemy.dy * enemy.step;
+  const x = (enemy.wrap ? enemy.x - enemy.dx : enemy.x) * CELL + enemy.dx * enemy.step;
+  const y = (enemy.wrap ? enemy.y - enemy.dy : enemy.y) * CELL + enemy.dy * enemy.step;
   const frame = enemy.step > 0 ? enemy.walk + 1 : 0;
   const behind = pose.facing === "up";
   if (behind) drawHeldSwordAt(x, y, pose);
@@ -760,7 +760,7 @@ function drawDepthScene(slideX, slideY) {
 
   for (const enemy of enemies) {
     if (enemy.area !== areaIndex || !enemy.entered) continue;
-    const depth = (enemy.y + 1) * CELL + enemy.dy * enemy.step;
+    const depth = ((enemy.wrap ? enemy.y - enemy.dy : enemy.y) + 1) * CELL + enemy.dy * enemy.step;
     add(depth, 2, () => drawBarbarian(enemy));
   }
 

@@ -10,7 +10,7 @@ export function blockedCell(x, y, player, npcs, ignoreNpc) {
   for (const enemy of enemies) {
     if (enemy.area !== areaIndex || enemy === ignoreNpc) continue;
     if (enemy.x === x && enemy.y === y) return true;
-    if (enemy.step > 0 && x === enemy.x + enemy.dx && y === enemy.y + enemy.dy) return true;
+    if (enemy.step > 0 && !enemy.wrap && x === enemy.x + enemy.dx && y === enemy.y + enemy.dy) return true;
   }
   return npcs.some((npc) => npc !== ignoreNpc && (npc.area ?? 0) === areaIndex && npc.x === x && npc.y === y);
 }
