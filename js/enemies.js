@@ -62,6 +62,7 @@ export const barbarian = {
   arrive: 0,
   entered: true,
   attack: { frame: -1, tick: 0, facing: "left", x: 0, y: 0 },
+  alert: null,
 };
 
 function sightBlocked(x, y) {
@@ -111,6 +112,19 @@ function guessSpot(x, y, dx, dy) {
     bestY = ny;
   }
   return { x: bestX, y: bestY };
+}
+
+const ALERT_LIFE = 14;
+
+function spotPlayer() {
+  if (searching) return;
+  barbarian.alert = { life: ALERT_LIFE, max: ALERT_LIFE };
+}
+
+function tickAlert() {
+  if (!barbarian.alert) return;
+  barbarian.alert.life -= 1;
+  if (barbarian.alert.life <= 0) barbarian.alert = null;
 }
 
 function giveUp() {
@@ -266,6 +280,14 @@ export function updateBarbarian() {
     return;
   }
   if (areaIndex !== RIDGE) return;
+  tickAlert();
+  if (barbarian.alert) {
+    const dx = player.x - barbarian.x;
+    const dy = player.y - barbarian.y;
+    if (sees(player.x, player.y)) barbarian.facing = facingOf(dx, dy);
+    barbarian.walk = 0;
+    return;
+  }
   const attack = barbarian.attack;
   if (attack.frame >= 0) {
     attack.tick += 1;
@@ -295,6 +317,7 @@ export function updateBarbarian() {
   const dx = player.x - barbarian.x;
   const dy = player.y - barbarian.y;
   if (sees(player.x, player.y)) {
+    spotPlayer();
     searching = true;
     idle = null;
     if (!saw) saw = { x: player.x, y: player.y, dx: 0, dy: 0 };
@@ -305,6 +328,11 @@ export function updateBarbarian() {
       saw.dy = player.dy;
     }
     hunt = null;
+    if (barbarian.alert) {
+      barbarian.facing = facingOf(dx, dy);
+      barbarian.walk = 0;
+      return;
+    }
     if (Math.abs(dx) + Math.abs(dy) === 1) {
       beginSlash(facingOf(dx, dy));
       return;

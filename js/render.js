@@ -646,6 +646,7 @@ function drawBarbarian() {
   drawCharacter(barbarian, barbarian.palette, x, y, frame);
   if (pose.frame >= 0) drawSlash(attack.x, attack.y, attack.facing, pose.frame);
   if (!behind) drawHeldSwordAt(x, y, pose);
+  drawAlert(x, y);
 }
 
 function drawGroundItem(item) {
@@ -791,6 +792,22 @@ function drawGlyph(rows, ox, oy, color) {
       if (rows[y][x] === "#") ctx.fillRect(ox + x, oy + y, 1, 1);
     }
   }
+}
+
+function drawAlert(x, y) {
+  const alert = barbarian.alert;
+  if (!alert) return;
+  const age = alert.max - alert.life;
+  const rise = Math.min(5, age);
+  const len = 2 + Math.min(2, Math.floor(age / 2));
+  if (alert.life < 5) ctx.globalAlpha = alert.life / 5;
+  ctx.fillStyle = "#fff6e8";
+  const cx = x + 8;
+  const top = y - 3 - rise;
+  for (const [ox, dx] of [[-4, -1], [0, 0], [4, 1]]) {
+    for (let i = 0; i < len; i++) ctx.fillRect(cx + ox + dx * i, top + i, 1, 1);
+  }
+  ctx.globalAlpha = 1;
 }
 
 function drawHealth() {
