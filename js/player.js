@@ -13,7 +13,7 @@ function moveStep() {
   return step;
 }
 const WALK_FRAMES = 4;
-const WALK_FRAME_TICKS = 6;
+const WALK_FRAME_TICKS = 5;
 
 export const player = {
   x: 7,
@@ -57,11 +57,11 @@ export function healPlayer(amount) {
 }
 
 function advanceWalk() {
+  player.walkClock += player.holding ? 0.75 : 1;
   if (player.walkClock >= WALK_FRAME_TICKS) {
-    player.walkClock = 0;
+    player.walkClock -= WALK_FRAME_TICKS;
     player.walk = (player.walk + 1) % WALK_FRAMES;
   }
-  player.walkClock += 1;
 }
 
 function stopWalk() {

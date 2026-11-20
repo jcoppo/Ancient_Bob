@@ -417,7 +417,7 @@ function drawCharacter(person, palette, originX = person.x * CELL, originY = per
 
 function drawPlayerCharacter(originX, originY) {
   if (!playerSpriteSheet.complete || !playerSpriteSheet.naturalWidth) return;
-  const column = PLAYER_IDLE_COLUMN;
+  const column = player.walking ? PLAYER_WALK_COLUMNS[player.walk] : PLAYER_IDLE_COLUMN;
   const frameY = PLAYER_FRAME_Y[player.facing] ?? PLAYER_FRAME_Y.down;
   const horizontalOffset = Math.floor((CELL - PLAYER_FRAME_WIDTH) / 2);
   const baselineY = originY + CELL - PLAYER_FRAME_HEIGHT;
