@@ -4,7 +4,7 @@ import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPos
 import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js";
 import { player } from "./player.js";
 import { NPCS } from "./npcs.js";
-import { barbarian } from "./enemies.js";
+import { enemies } from "./enemies.js";
 import { showGrid } from "./input.js";
 
 const canvas = document.getElementById("game");
@@ -671,21 +671,21 @@ function drawNpc(npc) {
   if (hoe && npc.facing !== "up") drawHeldHoe(x, y, hoe);
 }
 
-function drawBarbarian() {
-  if (!barbarian.entered) return;
-  const attack = barbarian.attack;
+function drawBarbarian(enemy) {
+  if (!enemy.entered) return;
+  const attack = enemy.attack;
   const pose = attack.frame < 0
-    ? { facing: barbarian.facing, aimed: false, frame: -1 }
+    ? { facing: enemy.facing, aimed: false, frame: -1 }
     : { facing: attack.facing, aimed: attack.frame <= 3, frame: attack.frame };
-  const x = barbarian.x * CELL + barbarian.dx * barbarian.step;
-  const y = barbarian.y * CELL + barbarian.dy * barbarian.step;
-  const frame = barbarian.step > 0 ? barbarian.walk + 1 : 0;
+  const x = enemy.x * CELL + enemy.dx * enemy.step;
+  const y = enemy.y * CELL + enemy.dy * enemy.step;
+  const frame = enemy.step > 0 ? enemy.walk + 1 : 0;
   const behind = pose.facing === "up";
   if (behind) drawHeldSwordAt(x, y, pose);
-  drawCharacter(barbarian, barbarian.palette, x, y, frame);
+  drawCharacter(enemy, enemy.palette, x, y, frame);
   if (pose.frame >= 0) drawSlash(attack.x, attack.y, attack.facing, pose.frame);
   if (!behind) drawHeldSwordAt(x, y, pose);
-  drawAlert(x, y);
+  drawAlert(x, y, enemy.alert);
 }
 
 function drawGroundItem(item) {
@@ -758,9 +758,10 @@ function drawDepthScene(slideX, slideY) {
     });
   }
 
-  if (areaIndex === 2 && barbarian.entered) {
-    const depth = (barbarian.y + 1) * CELL + barbarian.dy * barbarian.step;
-    add(depth, 2, drawBarbarian);
+  for (const enemy of enemies) {
+    if (enemy.area !== areaIndex || !enemy.entered) continue;
+    const depth = (enemy.y + 1) * CELL + enemy.dy * enemy.step;
+    add(depth, 2, () => drawBarbarian(enemy));
   }
 
   const last = WHEAT_GROWTH_PIXELS.length - 1;
@@ -833,8 +834,7 @@ function drawGlyph(rows, ox, oy, color) {
   }
 }
 
-function drawAlert(x, y) {
-  const alert = barbarian.alert;
+function drawAlert(x, y, alert) {
   if (!alert) return;
   const age = alert.max - alert.life;
   const rise = Math.min(5, age);
