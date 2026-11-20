@@ -61,7 +61,7 @@ export const barbarian = {
   carryBank: 0,
   arrive: 0,
   entered: true,
-  attack: { frame: -1, facing: "left", x: 0, y: 0 },
+  attack: { frame: -1, tick: 0, facing: "left", x: 0, y: 0 },
 };
 
 function sightBlocked(x, y) {
@@ -251,6 +251,7 @@ function beginSlash(facing) {
   barbarian.attack.x = barbarian.x * CELL;
   barbarian.attack.y = barbarian.y * CELL;
   barbarian.attack.frame = 0;
+  barbarian.attack.tick = 0;
 }
 
 export function updateBarbarian() {
@@ -267,6 +268,8 @@ export function updateBarbarian() {
   if (areaIndex !== RIDGE) return;
   const attack = barbarian.attack;
   if (attack.frame >= 0) {
+    attack.tick += 1;
+    if (attack.tick % 2 !== 0) return;
     attack.frame += 1;
     if (attack.frame === 1) strike();
     if (attack.frame >= SLASH_FRAMES) attack.frame = -1;
