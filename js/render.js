@@ -20,12 +20,21 @@ function loadTileImage(name) {
 }
 
 const GROUND_TILES = {
-  g: loadTileImage("grass"),
   p: loadTileImage("path"),
   r: loadTileImage("rock"),
   s: loadTileImage("soil"),
   w: loadTileImage("water"),
 };
+
+const GRASS_TILES = [1, 2, 3, 4].map((n) => loadTileImage(`grass${n}`));
+
+const GRASS_CHOICE = Array.from({ length: ROWS }, () => (
+  Array.from({ length: COLS }, () => GRASS_TILES[Math.floor(Math.random() * GRASS_TILES.length)])
+));
+
+function grassTile(x, y) {
+  return GRASS_CHOICE[y][x];
+}
 
 const TILLED_TILE_IMAGES = Array.from(
   { length: 6 },
@@ -276,7 +285,7 @@ function drawGround() {
     for (let x = 0; x < COLS; x++) {
       const mark = MAP[y][x];
       const tilled = TILLED_TILE_IMAGES[Number(mark) - 1];
-      const ground = tilled || GROUND_TILES[mark] || GROUND_TILES.g;
+      const ground = tilled || GROUND_TILES[mark] || grassTile(x, y);
       drawTile(ground, x, y);
     }
   }
