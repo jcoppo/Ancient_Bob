@@ -214,7 +214,7 @@ function updateFarmer(npc) {
   npc.x += step[0];
   npc.y += step[1];
   npc.facing = faceStep(step[0], step[1]);
-  npc.wait = FARM_STEP;
+  npc.wait = npc.holding ? FARM_STEP + 1 : FARM_STEP;
 }
 
 function updateBaker(npc) {

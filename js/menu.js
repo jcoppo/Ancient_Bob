@@ -398,7 +398,7 @@ function cellNumber(value) {
 function saveGame() {
   const data = {
     area: areaIndex,
-    player: { x: player.x, y: player.y, facing: player.facing, hp: player.hp },
+    player: { x: player.x, y: player.y, facing: player.facing, hp: player.hp, maxHp: player.maxHp },
     items: items.map((item) => ({
       kind: item.kind,
       area: item.area,
@@ -445,7 +445,11 @@ export function loadGame() {
   player.x = data.player.x;
   player.y = data.player.y;
   player.facing = data.player.facing;
-  player.hp = Math.max(0, Math.min(player.maxHp, data.player.hp | 0));
+  const savedHp = data.player.hp | 0;
+  const savedMax = data.player.maxHp | 0;
+  player.hp = savedMax >= player.maxHp
+    ? Math.max(0, Math.min(player.maxHp, savedHp))
+    : player.maxHp;
   player.dx = 0;
   player.dy = 0;
   player.step = 0;

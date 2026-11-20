@@ -1,6 +1,12 @@
 import { CELL } from "./config.js";
 
 const SLIDE = 2;
+
+function moveStep() {
+  if (!player.holding) return SLIDE;
+  player.carryClock = (player.carryClock + 1) % 4;
+  return player.carryClock === 0 ? 1 : SLIDE;
+}
 const WALK_FRAMES = 4;
 const WALK_FRAME_TICKS = 6;
 
@@ -14,9 +20,10 @@ export const player = {
   walking: false,
   walk: 0,
   walkClock: 0,
+  carryClock: 0,
   wrap: false,
-  hp: 5,
-  maxHp: 5,
+  hp: 10,
+  maxHp: 10,
 };
 
 export function resetPlayer() {
@@ -29,8 +36,9 @@ export function resetPlayer() {
   player.walking = false;
   player.walk = 0;
   player.walkClock = 0;
+  player.carryClock = 0;
   player.wrap = false;
-  player.maxHp = 5;
+  player.maxHp = 10;
   player.hp = player.maxHp;
   player.holding = null;
 }
@@ -40,7 +48,7 @@ export function hurtPlayer(amount) {
 }
 
 export function healPlayer(amount) {
-  player.hp = Math.min(5, player.hp + amount);
+  player.hp = Math.min(player.maxHp, player.hp + amount);
 }
 
 function advanceWalk() {
@@ -59,7 +67,7 @@ function stopWalk() {
 
 export function updatePlayer(dir, tryStep) {
   if (player.step > 0) {
-    player.step += SLIDE;
+    player.step = Math.min(CELL, player.step + moveStep());
     advanceWalk();
     if (player.step < CELL) return;
 
@@ -90,7 +98,7 @@ export function updatePlayer(dir, tryStep) {
 
   player.dx = dx;
   player.dy = dy;
-  player.step = SLIDE;
+  player.step = moveStep();
   player.walking = true;
   advanceWalk();
 }

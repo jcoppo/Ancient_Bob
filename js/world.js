@@ -129,23 +129,23 @@ const MEADOW_TREES = [
 const RIDGE_MAP = [
   "wwwwrrrrggggrrgggrrr",
   "wwwwrrrgggggrrgggrrg",
-  "wwwwrrgggggggrggggrr",
-  "wwwwgggggggggggggggg",
-  "wwwwggggrrrrgggggggg",
+  "wwwwrrggrrgggrggggrr",
+  "wwwwggggrrggggrrrggg",
+  "wwwwggggrrrrgggrgggg",
   "wwwwgggrrrrrrggggggr",
-  "wwwwgggrrrrggggggggr",
-  "wwwwgggggrrggggggggr",
-  "wwwwggggggggggggggrr",
-  "wwwwgggggggggggggggr",
+  "wwwwgggrrrrgggrrgggr",
+  "wwwwgggggrrggggrrggr",
+  "wwwwggrggggrrgggggrr",
+  "wwwwggrgggggrggggggr",
   "wwwwgggrrrgggggggggg",
-  "wwwwggrrrrrrgggggggg",
-  "wwwwggrrrrrrgggrrrgg",
+  "wwwwggrrrrrrggggrrgg",
+  "wwwwggrrrrrrgggrrrrg",
   "wwwwgggrrrgggggrrrgg",
-  "wwwwgggggggggggrrggg",
-  "wwwwgggggggggggggggg",
-  "wwwwrrgggggggggggrrr",
+  "wwwwggggrrgggggrrggg",
+  "wwwwggggrrrggggggggg",
+  "wwwwrrgggrgggggggrrr",
   "wwwwrrrggggggggggrrr",
-  "wwwwrrggggggggggggrr",
+  "wwwwrrgggggrggggggrr",
   "wwwwgggggggggggggggg",
 ];
 
@@ -225,6 +225,13 @@ export function applySavedTerrain(saved) {
   if (AREAS[0].bushes.every((row) => !/[b1234]/.test(row))) {
     START_TERRAIN[0].bushes.forEach((row, y) => { AREAS[0].bushes[y] = row; });
   }
+  RIDGE_MAP.forEach((row, y) => {
+    let saved = AREAS[2].map[y];
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] === "r" && saved[x] === "g") saved = saved.slice(0, x) + "r" + saved.slice(x + 1);
+    }
+    AREAS[2].map[y] = saved;
+  });
   paintTiles(AREAS[1].map, MEADOW_CLEARED, "s", "g");
   stampSoil(AREAS[1].map, MEADOW_SOIL);
   const bushRow = AREAS[1].bushes[11];

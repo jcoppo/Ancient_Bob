@@ -417,10 +417,7 @@ function drawCharacter(person, palette, originX = person.x * CELL, originY = per
 
 function drawPlayerCharacter(originX, originY) {
   if (!playerSpriteSheet.complete || !playerSpriteSheet.naturalWidth) return;
-  const moving = player.walking;
-  const column = moving
-    ? PLAYER_WALK_COLUMNS[player.walk % PLAYER_WALK_COLUMNS.length]
-    : PLAYER_IDLE_COLUMN;
+  const column = PLAYER_IDLE_COLUMN;
   const frameY = PLAYER_FRAME_Y[player.facing] ?? PLAYER_FRAME_Y.down;
   const horizontalOffset = Math.floor((CELL - PLAYER_FRAME_WIDTH) / 2);
   const baselineY = originY + CELL - PLAYER_FRAME_HEIGHT;
@@ -721,7 +718,7 @@ function drawDepthScene(slideX, slideY) {
     });
   }
 
-  if (areaIndex === 0 && barbarian.entered) {
+  if (areaIndex === 2 && barbarian.entered) {
     const depth = (barbarian.y + 1) * CELL + barbarian.dy * barbarian.step;
     add(depth, 2, drawBarbarian);
   }
