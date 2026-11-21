@@ -1,5 +1,5 @@
 import { CELL, COLS, ROWS } from "./config.js";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, SWORD_PALETTE, SWORD_SPRITE, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js";
+import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js";
 import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js";
 import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js";
 import { player, playerInWater } from "./player.js";
@@ -415,44 +415,6 @@ function drawSprite(sprite, palette, ox, oy, flip) {
   }
 }
 
-function facingPixel(sprite, x, y, facing) {
-  const width = sprite[0].length;
-  const height = sprite.length;
-  if (facing === "down") return spritePixel(sprite, x, height - 1 - y);
-  if (facing === "left") return spritePixel(sprite, width - 1 - y, x);
-  if (facing === "right") return spritePixel(sprite, y, height - 1 - x);
-  return spritePixel(sprite, x, y);
-}
-
-function drawPointedSprite(sprite, palette, ox, oy, facing) {
-  const width = sprite[0].length;
-  const height = sprite.length;
-  const turned = facing === "left" || facing === "right";
-  const dw = turned ? height : width;
-  const dh = turned ? width : height;
-  const at = (x, y) => (x < 0 || y < 0 || x >= dw || y >= dh ? "" : facingPixel(sprite, x, y, facing));
-
-  ctx.fillStyle = OUTLINE;
-  for (let y = 0; y < dh; y++) {
-    for (let x = 0; x < dw; x++) {
-      if (!palette[at(x, y)]) continue;
-      if (!palette[at(x - 1, y)]) ctx.fillRect(ox + x - 1, oy + y, 1, 1);
-      if (!palette[at(x + 1, y)]) ctx.fillRect(ox + x + 1, oy + y, 1, 1);
-      if (!palette[at(x, y - 1)]) ctx.fillRect(ox + x, oy + y - 1, 1, 1);
-      if (!palette[at(x, y + 1)]) ctx.fillRect(ox + x, oy + y + 1, 1, 1);
-    }
-  }
-
-  for (let y = 0; y < dh; y++) {
-    for (let x = 0; x < dw; x++) {
-      const color = palette[at(x, y)];
-      if (!color) continue;
-      ctx.fillStyle = color;
-      ctx.fillRect(ox + x, oy + y, 1, 1);
-    }
-  }
-}
-
 function characterSprite(person, frame) {
   if (person.dead) return CORPSE;
   const facingKey = person.facing === "right" ? "left" : person.facing;
@@ -515,8 +477,70 @@ const SLASH_LINES = {
   down: [[3, 16, 11, 24], [7, 16, 15, 24], [1, 18, 9, 26]],
 };
 
+const swordImage = new Image();
+swordImage.src = new URL("../assets/images/items/sword.png", import.meta.url).href;
+let swordGrid = null;
+
+function swordPixels() {
+  if (swordGrid) return swordGrid;
+  if (!swordImage.complete || !swordImage.naturalWidth) return null;
+  const scratch = document.createElement("canvas");
+  scratch.width = swordImage.naturalWidth;
+  scratch.height = swordImage.naturalHeight;
+  const sctx = scratch.getContext("2d", { willReadFrequently: true });
+  sctx.imageSmoothingEnabled = false;
+  sctx.drawImage(swordImage, 0, 0);
+  const data = sctx.getImageData(0, 0, scratch.width, scratch.height).data;
+  const rows = [];
+  for (let y = 0; y < scratch.height; y++) {
+    const row = [];
+    for (let x = 0; x < scratch.width; x++) {
+      const i = (y * scratch.width + x) * 4;
+      row.push(data[i + 3] < 128 ? null : `#${[data[i], data[i + 1], data[i + 2]].map((n) => n.toString(16).padStart(2, "0")).join("")}`);
+    }
+    rows.push(row);
+  }
+  swordGrid = rows;
+  return swordGrid;
+}
+
+function swordFacingPixel(pixels, x, y, facing) {
+  const width = pixels[0].length;
+  const height = pixels.length;
+  if (facing === "down") return pixels[height - 1 - y]?.[x] ?? null;
+  if (facing === "left") return pixels[x]?.[width - 1 - y] ?? null;
+  if (facing === "right") return pixels[height - 1 - x]?.[y] ?? null;
+  return pixels[y]?.[x] ?? null;
+}
+
 function drawSword(ox, oy, facing) {
-  drawPointedSprite(SWORD_SPRITE, SWORD_PALETTE, ox, oy, facing);
+  const pixels = swordPixels();
+  if (!pixels) return;
+  const width = pixels[0].length;
+  const height = pixels.length;
+  const turned = facing === "left" || facing === "right";
+  const dw = turned ? height : width;
+  const dh = turned ? width : height;
+  const at = (x, y) => (x < 0 || y < 0 || x >= dw || y >= dh ? null : swordFacingPixel(pixels, x, y, facing));
+
+  ctx.fillStyle = OUTLINE;
+  for (let y = 0; y < dh; y++) {
+    for (let x = 0; x < dw; x++) {
+      if (!at(x, y)) continue;
+      if (!at(x - 1, y)) ctx.fillRect(ox + x - 1, oy + y, 1, 1);
+      if (!at(x + 1, y)) ctx.fillRect(ox + x + 1, oy + y, 1, 1);
+      if (!at(x, y - 1)) ctx.fillRect(ox + x, oy + y - 1, 1, 1);
+      if (!at(x, y + 1)) ctx.fillRect(ox + x, oy + y + 1, 1, 1);
+    }
+  }
+  for (let y = 0; y < dh; y++) {
+    for (let x = 0; x < dw; x++) {
+      const color = at(x, y);
+      if (!color) continue;
+      ctx.fillStyle = color;
+      ctx.fillRect(ox + x, oy + y, 1, 1);
+    }
+  }
 }
 
 const HOE_HOLD = {
@@ -531,7 +555,7 @@ const HOE_HEIGHT = 14;
 const HOE_PIVOT = [7, 5];
 const HOE_TURN = Math.PI * 0.25;
 const hoeImage = new Image();
-hoeImage.src = new URL("../assets/images/hoe.png", import.meta.url).href;
+hoeImage.src = new URL("../assets/images/items/hoe.png", import.meta.url).href;
 
 function drawHoe(ox, oy, angle = 0) {
   if (!hoeImage.complete || !hoeImage.naturalWidth) return;
@@ -615,13 +639,15 @@ function drawHeldSwordAt(slideX, slideY, pose) {
 }
 
 function drawHeldSword(gripX, gripY, angle) {
+  const pixels = swordPixels();
+  if (!pixels) return;
   const [pivotX, pivotY] = SWORD_PIVOT;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
   const dots = [];
-  for (let y = 0; y < SWORD_SPRITE.length; y++) {
-    for (let x = 0; x < SWORD_SPRITE[y].length; x++) {
-      const color = SWORD_PALETTE[SWORD_SPRITE[y][x]];
+  for (let y = 0; y < pixels.length; y++) {
+    for (let x = 0; x < pixels[y].length; x++) {
+      const color = pixels[y][x];
       if (!color) continue;
       const dx = x - pivotX;
       const dy = y - pivotY;
