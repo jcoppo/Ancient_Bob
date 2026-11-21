@@ -393,7 +393,7 @@ function strike(enemy) {
   if (npc) npc.dead = true;
   const onPlayer = player.x === x && player.y === y;
   const slidingIn = player.step > 0 && !player.wrap && player.x + player.dx === x && player.y + player.dy === y;
-  if (onPlayer || slidingIn) hurtPlayer(2);
+  if (onPlayer || slidingIn) hurtPlayer(3);
 }
 
 function beginEntrance(enemy) {

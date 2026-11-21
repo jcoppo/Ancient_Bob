@@ -2,6 +2,7 @@ import { COLS, ROWS } from "./config.js";
 import { healPlayer, player, resetPlayer } from "./player.js";
 import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, migrateCropWaits, resetItems, STAGE_FRAMES, stores, takeBread } from "./items.js";
 import { NPCS, resetNpcs } from "./npcs.js";
+import { beginHealthSlide } from "./render.js";
 import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js";
 
 const SAVE_KEY = "ancient-bob";
@@ -196,7 +197,10 @@ function eatBread() {
     paintMenu();
     return;
   }
-  if (takeBread()) healPlayer(5);
+  if (takeBread()) {
+    healPlayer(5);
+    beginHealthSlide();
+  }
   const count = itemEntries().length;
   if (itemIndex >= count) itemIndex = Math.max(0, count - 1);
   screen = "items";

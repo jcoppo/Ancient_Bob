@@ -858,12 +858,73 @@ function drawAlert(x, y, alert) {
   ctx.globalAlpha = 1;
 }
 
+const HEALTH_SLIDE_FRAMES = 8;
+const HEALTH_TRAIL_FRAMES = 12;
+let shownHp = null;
+let slideFrom = 0;
+let slideTo = 0;
+let slideTick = HEALTH_SLIDE_FRAMES;
+let trailHp = null;
+let trailFrom = 0;
+let trailTo = 0;
+let trailTick = HEALTH_TRAIL_FRAMES;
+
+export function beginHealthSlide() {
+  if (shownHp == null) shownHp = player.hp;
+  slideFrom = shownHp;
+  slideTo = player.hp;
+  slideTick = 0;
+  trailHp = shownHp;
+  trailFrom = shownHp;
+  trailTo = shownHp;
+  trailTick = HEALTH_TRAIL_FRAMES;
+}
+
+function advanceHealthBar() {
+  if (shownHp == null) {
+    shownHp = player.hp;
+    slideFrom = player.hp;
+    slideTo = player.hp;
+    slideTick = HEALTH_SLIDE_FRAMES;
+    trailHp = player.hp;
+    trailFrom = player.hp;
+    trailTo = player.hp;
+    trailTick = HEALTH_TRAIL_FRAMES;
+    return;
+  }
+  if (player.hp < shownHp) {
+    trailFrom = Math.max(shownHp, trailHp);
+    trailTo = player.hp;
+    trailTick = 0;
+    trailHp = trailFrom;
+    shownHp = player.hp;
+    slideFrom = player.hp;
+    slideTo = player.hp;
+    slideTick = HEALTH_SLIDE_FRAMES;
+  } else if (slideTick >= HEALTH_SLIDE_FRAMES) {
+    shownHp = player.hp;
+    slideTo = player.hp;
+  } else {
+    slideTick += 1;
+    const t = slideTick / HEALTH_SLIDE_FRAMES;
+    shownHp = slideFrom + (slideTo - slideFrom) * t;
+  }
+  if (trailTick < HEALTH_TRAIL_FRAMES) {
+    trailTick += 1;
+    const t = trailTick / HEALTH_TRAIL_FRAMES;
+    trailHp = trailFrom + (trailTo - trailFrom) * t;
+  } else {
+    trailHp = shownHp;
+  }
+}
+
 function drawHealth() {
+  advanceHealthBar();
   const x0 = 4;
   const y0 = 4;
   drawGlyph(HEART, x0, y0, "#c4473a");
   let textX = x0 + HEART[0].length + 3;
-  for (const ch of `${player.hp}/${player.maxHp}`) {
+  for (const ch of `${Math.round(shownHp)}/${player.maxHp}`) {
     const glyph = DIGITS[ch];
     drawGlyph(glyph, textX, y0, "#f6edd4");
     textX += glyph[0].length + 1;
@@ -871,11 +932,16 @@ function drawHealth() {
   const barY = y0 + HEART.length + 2;
   const barW = 5 * 6;
   const barH = 3;
-  const filled = Math.round((player.hp / player.maxHp) * barW);
+  const filled = Math.round((shownHp / player.maxHp) * barW);
+  const trail = Math.round((Math.max(shownHp, trailHp) / player.maxHp) * barW);
   ctx.fillStyle = "#1a140f";
   ctx.fillRect(x0 - 1, barY - 1, barW + 2, barH + 2);
   ctx.fillStyle = "#3a2e28";
   ctx.fillRect(x0, barY, barW, barH);
+  if (trail > filled) {
+    ctx.fillStyle = "#fff6e8";
+    ctx.fillRect(x0 + filled, barY, trail - filled, barH);
+  }
   ctx.fillStyle = "#c4473a";
   ctx.fillRect(x0, barY, filled, barH);
 }
