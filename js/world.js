@@ -68,6 +68,13 @@ const MEADOW_SOIL = [
   { y: 12, x0: 3, x1: 10 },
 ];
 
+const MEADOW_WATER = [
+  { y: 15, x0: 17, x1: 19 },
+  { y: 16, x0: 16, x1: 19 },
+  { y: 17, x0: 16, x1: 19 },
+  { y: 18, x0: 17, x1: 19 },
+];
+
 // The old top row, so a saved meadow loses those five tiles.
 const MEADOW_CLEARED = [
   { y: 9, x0: 4, x1: 9 },
@@ -88,7 +95,15 @@ function stampSoil(map, rows) {
   paintTiles(map, rows, "g", "s");
 }
 
+function stampWater(map, rows) {
+  for (const pond of rows) {
+    const row = map[pond.y];
+    map[pond.y] = row.slice(0, pond.x0) + "w".repeat(pond.x1 - pond.x0) + row.slice(pond.x1);
+  }
+}
+
 stampSoil(MEADOW_MAP, MEADOW_SOIL);
+stampWater(MEADOW_MAP, MEADOW_WATER);
 
 // Open on the left. Bushes seal the top, bottom, and right, with more scattered inside.
 const MEADOW_BUSHES = [
@@ -379,6 +394,7 @@ export function applySavedTerrain(saved) {
   }
   paintTiles(AREAS[1].map, MEADOW_CLEARED, "s", "g");
   stampSoil(AREAS[1].map, MEADOW_SOIL);
+  stampWater(AREAS[1].map, MEADOW_WATER);
   const bushRow = AREAS[1].bushes[11];
   if (bushRow?.[4] === "b" && bushRow[1] === ".") {
     AREAS[1].bushes[11] = `${bushRow.slice(0, 1)}b${bushRow.slice(2, 4)}.${bushRow.slice(5)}`;
