@@ -1,7 +1,7 @@
 import { COLS, ROWS } from "./config.js";
 import { healPlayer, player, resetPlayer } from "./player.js";
 import { applyCrops, coinCanvas, cropSnapshot, heldItem, items, loafCanvas, migrateCropWaits, resetItems, STAGE_FRAMES, stores, takeBread } from "./items.js";
-import { NPCS, resetNpcs } from "./npcs.js";
+import { NPCS, resetNpcs, syncNpcTools } from "./npcs.js";
 import { beginHealthSlide } from "./render.js";
 import { applySavedTerrain, areaIndex, areaList, enterArea, resetTerrain } from "./world.js";
 
@@ -413,6 +413,7 @@ function saveGame() {
       x: item.x,
       y: item.y,
       held: item.held,
+      carrier: item.carrier || null,
     })),
     areas: areaList().map((area) => ({ map: area.map.slice(), bushes: area.bushes.slice() })),
     npcs: NPCS.map((npc) => ({
@@ -423,6 +424,8 @@ function saveGame() {
       dead: !!npc.dead,
       wait: npc.wait,
       met: !!npc.met,
+      phase: npc.phase,
+      route: npc.route,
     })),
     stores: { bread: stores.bread, gold: stores.gold },
     crops: cropSnapshot(),
@@ -485,6 +488,7 @@ export function loadGame() {
       item.x = saved.x;
       item.y = saved.y;
       item.held = !!saved.held;
+      item.carrier = !saved.held && item.kind === "bag" && saved.carrier === "Farmer" ? "Farmer" : null;
     }
     let holding = null;
     for (const item of items) {
@@ -508,8 +512,14 @@ export function loadGame() {
     npc.x = oldPlot ? 10 : saved.x;
     npc.y = oldPlot ? 12 : saved.y;
     if (npc.name === "Farmer") {
-      npc.route = -1;
-      npc.till = 0;
+      const phases = ["till", "rest-till", "drop-hoe", "get-bag", "sow", "rest-sow", "drop-bag", "get-hoe"];
+      npc.route = Number.isInteger(saved.route) && saved.route >= 0 ? saved.route : 0;
+      npc.phase = phases.includes(saved.phase) ? saved.phase : "till";
+      npc.hoeing = false;
+      npc.sowing = false;
+      npc.swing = 0;
+      npc.sow = 0;
+      npc.bagT = 0;
       npc.hoe = 0;
       npc.hoeBack = false;
     }
@@ -518,4 +528,5 @@ export function loadGame() {
     npc.met = !!saved.met;
     if (Number.isInteger(saved.wait) && saved.wait > 0) npc.wait = saved.wait;
   }
+  syncNpcTools();
 }

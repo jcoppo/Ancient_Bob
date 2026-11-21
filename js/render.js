@@ -702,11 +702,16 @@ function drawNpc(npc) {
   const hoe = npc.tool === "hoe"
     ? { facing: npc.facing, t: npc.hoe || 0, returning: !!npc.hoeBack }
     : null;
+  const bag = npc.holding === "bag"
+    ? { facing: npc.facing, t: npc.bagT || 0 }
+    : null;
   if (hoe && npc.facing === "up") drawHeldHoe(x, y, hoe);
+  if (bag && npc.facing === "up") drawHeldBag(x, y, bag);
   if (npc.name === "Baker") drawBakerSprite(x, y);
   else if (npc.name === "Farmer") drawFarmerSprite(x, y, npc.facing);
   else drawCharacter(npc, npc.palette);
   if (hoe && npc.facing !== "up") drawHeldHoe(x, y, hoe);
+  if (bag && npc.facing !== "up") drawHeldBag(x, y, bag);
 }
 
 function drawBarbarian(enemy) {

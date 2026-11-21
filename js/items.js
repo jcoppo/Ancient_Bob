@@ -66,7 +66,7 @@ function iconCanvas(rows, colors, className) {
 }
 
 export function groundItems() {
-  return items.filter((item) => !item.held && item.area === areaIndex);
+  return items.filter((item) => !item.held && !item.carrier && item.area === areaIndex);
 }
 
 export function heldItem() {
@@ -79,6 +79,7 @@ export function itemInReach() {
 
 export function pickupItem(item) {
   item.held = true;
+  item.carrier = null;
   player.holding = item.kind;
 }
 
@@ -96,6 +97,7 @@ export function dropItem() {
   if (!item) return;
   if (groundItems().some((other) => other.x === player.x && other.y === player.y)) return;
   item.held = false;
+  item.carrier = null;
   item.area = areaIndex;
   item.x = player.x;
   item.y = player.y;
@@ -375,13 +377,9 @@ export function harvestWheat() {
   return true;
 }
 
-export function startSow() {
-  if (heldItem()?.kind !== "bag" || sow.frame >= 0) return;
-  if (MAP[player.y]?.[player.x] !== "s") return;
-  plantWheat(player.x, player.y);
-  sow.frame = 0;
-  const ox = player.x * CELL;
-  const oy = player.y * CELL;
+function spawnSeeds(x, y) {
+  const ox = x * CELL;
+  const oy = y * CELL;
   SEED_SPOTS.forEach(([px, py], index) => {
     seeds.push({
       x0: ox + 7,
@@ -393,6 +391,25 @@ export function startSow() {
       max: SOW_FRAMES,
     });
   });
+}
+
+export function soilOpen(x, y) {
+  return MAP[y]?.[x] === "s" && !crops.some((crop) => crop.area === areaIndex && crop.x === x && crop.y === y);
+}
+
+export function sowSoil(x, y) {
+  if (!soilOpen(x, y)) return false;
+  plantWheat(x, y);
+  spawnSeeds(x, y);
+  return true;
+}
+
+export function startSow() {
+  if (heldItem()?.kind !== "bag" || sow.frame >= 0) return;
+  if (MAP[player.y]?.[player.x] !== "s") return;
+  plantWheat(player.x, player.y);
+  sow.frame = 0;
+  spawnSeeds(player.x, player.y);
 }
 
 export function updateSow() {
@@ -428,6 +445,7 @@ export function resetItems() {
     item.x = start.x;
     item.y = start.y;
     item.held = false;
+    item.carrier = null;
   }
   player.holding = null;
   thrust.frame = -1;
