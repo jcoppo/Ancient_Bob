@@ -37,6 +37,10 @@ const BEACH_TILES = {
   ne: loadTileImage("grass_beach_ne"),
   sw: loadTileImage("grass_beach_sw"),
   se: loadTileImage("grass_beach_se"),
+  nwe: loadTileImage("grass_beach_nwe"),
+  swe: loadTileImage("grass_beach_swe"),
+  nsw: loadTileImage("grass_beach_nsw"),
+  nse: loadTileImage("grass_beach_nse"),
 };
 
 const GRASS_CHOICE = Array.from({ length: ROWS }, () => (
@@ -49,6 +53,10 @@ function beachSide(x, y) {
   const e = x < COLS - 1 && MAP[y][x + 1] === "w";
   const n = y > 0 && MAP[y - 1][x] === "w";
   const s = y < ROWS - 1 && MAP[y + 1][x] === "w";
+  if (n && w && e) return "nwe";
+  if (s && w && e) return "swe";
+  if (n && s && w) return "nsw";
+  if (n && s && e) return "nse";
   if (n && w) return "nw";
   if (n && e) return "ne";
   if (s && w) return "sw";
