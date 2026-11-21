@@ -1,5 +1,5 @@
 import { CELL, COLS, ROWS } from "./config.js";
-import { BAG_PALETTE, BAG_SPRITE, BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js";
+import { BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js";
 import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js";
 import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js";
 import { player, playerInWater } from "./player.js";
@@ -585,8 +585,13 @@ const BAG_HOLD = {
   right: [4, 6],
 };
 
+const BAG_HEIGHT = 16;
+const bagImage = new Image();
+bagImage.src = new URL("../assets/images/items/seed_bag.png", import.meta.url).href;
+
 function drawBag(ox, oy) {
-  drawSprite(BAG_SPRITE, BAG_PALETTE, ox, oy, false);
+  if (!bagImage.complete || !bagImage.naturalWidth) return;
+  ctx.drawImage(bagImage, ox, oy);
 }
 
 function drawHeldBag(slideX, slideY, pose) {
@@ -763,7 +768,7 @@ function drawGroundItem(item) {
     const ox = item.x * CELL + Math.floor((CELL - HOE_WIDTH) / 2);
     drawHoe(ox, item.y * CELL + CELL - HOE_HEIGHT);
   }
-  if (item.kind === "bag") drawBag(item.x * CELL, item.y * CELL + CELL - BAG_SPRITE.length);
+  if (item.kind === "bag") drawBag(item.x * CELL, item.y * CELL + CELL - BAG_HEIGHT);
   if (item.kind === "wheat") {
     const ox = item.x * CELL + Math.floor((CELL - WHEAT_BUNDLE_WIDTH) / 2);
     drawWheatBundle(ox, (item.y + 1) * CELL - WHEAT_BUNDLE_HEIGHT);

@@ -438,24 +438,6 @@ export const HOLD_ARMS = {
   },
 };
 
-export const BAG_PALETTE = {
-  t: "#4a3424",
-  h: "#c4924a",
-  d: "#8a5a32",
-  b: "#6b4228",
-};
-
-export const BAG_SPRITE = [
-  "......tttt......",
-  ".....thhhht.....",
-  "....bddddddb....",
-  "...bddddddddb...",
-  "...bddddddddb...",
-  "...bddddddddb...",
-  "....bddddddb....",
-  ".....bbbbbb.....",
-];
-
 export const OUTLINE = "#1a140f";
 
 
