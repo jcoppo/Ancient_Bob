@@ -79,7 +79,7 @@ function crowd() {
 }
 
 function sightBlocked(x, y) {
-  return MAP[y][x] === "w" || MAP[y][x] === "r" || buildingAt(x, y) || bushAt(x, y) || treeAt(x, y);
+  return MAP[y][x] === "r" || buildingAt(x, y) || bushAt(x, y) || treeAt(x, y);
 }
 
 function sees(enemy, x1, y1) {
@@ -120,7 +120,7 @@ function guessSpot(x, y, dx, dy) {
   for (let i = 0; i < GUESS_TILES; i++) {
     const nx = bestX + sx;
     const ny = bestY + sy;
-    if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS || sightBlocked(nx, ny)) break;
+    if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS || MAP[ny][nx] === "w" || sightBlocked(nx, ny)) break;
     bestX = nx;
     bestY = ny;
   }
