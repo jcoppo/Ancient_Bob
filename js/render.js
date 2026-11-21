@@ -90,6 +90,12 @@ const SWIM_HEAD_ROWS = { down: 9, right: 9, left: 9, up: 8 };
 const bakerImage = new Image();
 bakerImage.src = new URL("../assets/images/baker/baker_still.png", import.meta.url).href;
 
+const farmerImage = new Image();
+farmerImage.src = new URL(
+  "../assets/images/farmer/farmer_walk_sheet.png",
+  import.meta.url,
+).href;
+
 const playerSpriteSheet = new Image();
 playerSpriteSheet.src = new URL(
   "../assets/images/player/player_walk_sheet.png",
@@ -672,6 +678,24 @@ function drawBakerSprite(originX, originY) {
   );
 }
 
+function drawFarmerSprite(originX, originY, facing) {
+  if (!farmerImage.complete || !farmerImage.naturalWidth) return;
+  const frameY = PLAYER_FRAME_Y[facing] ?? PLAYER_FRAME_Y.down;
+  const destX = originX + Math.floor((CELL - PLAYER_FRAME_WIDTH) / 2);
+  const destY = originY + CELL - PLAYER_FRAME_HEIGHT;
+  ctx.drawImage(
+    farmerImage,
+    PLAYER_COLUMN_OFFSET,
+    frameY,
+    PLAYER_FRAME_WIDTH,
+    PLAYER_FRAME_HEIGHT,
+    destX,
+    destY,
+    PLAYER_FRAME_WIDTH,
+    PLAYER_FRAME_HEIGHT,
+  );
+}
+
 function drawNpc(npc) {
   const x = npc.x * CELL;
   const y = npc.y * CELL;
@@ -680,6 +704,7 @@ function drawNpc(npc) {
     : null;
   if (hoe && npc.facing === "up") drawHeldHoe(x, y, hoe);
   if (npc.name === "Baker") drawBakerSprite(x, y);
+  else if (npc.name === "Farmer") drawFarmerSprite(x, y, npc.facing);
   else drawCharacter(npc, npc.palette);
   if (hoe && npc.facing !== "up") drawHeldHoe(x, y, hoe);
 }

@@ -1,26 +1,7 @@
-import { FARM_SPRITES, FARMER_PALETTE, MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js";
+import { MAN_PALETTE, WOMAN_PALETTE, OLD_MAN_PALETTE } from "./pixels.js";
 import { player } from "./player.js";
 import { blockedCell } from "./collision.js";
 import { MAP, areaIndex, tillGrass } from "./world.js";
-
-function hat(sprite, rows) {
-  return rows.concat(sprite.slice(rows.length));
-}
-
-const FARMER_SPRITES = {
-  down: hat(FARM_SPRITES.down, [
-    "....HHHHHHHH....",
-    "...HHHHHHHHHH...",
-  ]),
-  up: hat(FARM_SPRITES.up, [
-    "...HHHHHHHHHH...",
-    "..HHHHHHHHHHHH..",
-  ]),
-  left: hat(FARM_SPRITES.left, [
-    "...HHHHHHHH.....",
-    "....HHHHHHH.....",
-  ]),
-};
 
 const STEP_DIRS = [
   [0, -1, "up"],
@@ -73,8 +54,7 @@ export const NPCS = [
     x: 10,
     y: 12,
     facing: "left",
-    palette: FARMER_PALETTE,
-    sprites: FARMER_SPRITES,
+    palette: MAN_PALETTE,
     holding: "hoe",
     tool: "hoe",
     wait: 40,
