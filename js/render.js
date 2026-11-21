@@ -594,9 +594,9 @@ function drawBag(ox, oy) {
   ctx.drawImage(bagImage, ox, oy);
 }
 
-function drawHeldBag(slideX, slideY, pose) {
+function drawHeldBag(slideX, slideY, pose, yOffset = 0) {
   const [hx, hy] = BAG_HOLD[pose.facing];
-  drawBag(slideX + hx, slideY + hy + Math.round(3 * pose.t));
+  drawBag(slideX + hx, slideY + hy + yOffset + Math.round(3 * pose.t));
 }
 
 const WHEAT_HOLD = {
@@ -625,7 +625,7 @@ function drawSeeds() {
   for (const seed of seeds) {
     const t = 1 - seed.life / seed.max;
     const x = Math.round(seed.x0 + (seed.x1 - seed.x0) * t);
-    const y = Math.round(seed.y0 + (seed.y1 - seed.y0) * t + Math.sin(t * Math.PI) * -4);
+    const y = Math.round(seed.y0 + (seed.y1 - seed.y0) * t - Math.sin(t * Math.PI) * seed.arc);
     ctx.fillStyle = seed.color;
     ctx.fillRect(x, y, 2, 2);
   }
@@ -791,13 +791,13 @@ function drawPlayer(slideX, slideY) {
   const wheatBehind = held?.kind === "wheat" && player.facing === "up";
   if (pose && swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   if (hoe && hoeBehind) drawHeldHoe(slideX, slideY, hoe);
-  if (bag && bagBehind) drawHeldBag(slideX, slideY, bag);
+  if (bag && bagBehind) drawHeldBag(slideX, slideY, bag, -2);
   if (wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
   drawPlayerCharacter(slideX, slideY);
   if (pose && pose.frame >= 0) drawSlash(pose.x, pose.y, pose.facing, pose.frame);
   if (pose && !swordBehind) drawHeldSwordAt(slideX, slideY, pose);
   if (hoe && !hoeBehind) drawHeldHoe(slideX, slideY, hoe);
-  if (bag && !bagBehind) drawHeldBag(slideX, slideY, bag);
+  if (bag && !bagBehind) drawHeldBag(slideX, slideY, bag, -2);
   if (held?.kind === "wheat" && !wheatBehind) drawHeldWheat(slideX, slideY, player.facing);
 }
 

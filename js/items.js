@@ -272,16 +272,16 @@ export function hoePose() {
 
 const SOW_FRAMES = 14;
 const SEED_SPOTS = [
-  [3, 11],
-  [6, 13],
-  [9, 10],
-  [12, 12],
-  [5, 14],
-  [8, 8],
+  [-1, 12],
+  [3, 15],
+  [6, 9],
   [11, 14],
-  [4, 9],
+  [15, 10],
+  [17, 13],
+  [1, 7],
+  [14, 16],
 ];
-const SEED_COLORS = ["#e6c15a", "#c4924a", "#8a5a32", "#f0d7a0"];
+const SEED_COLORS = ["#84ba35", "#2f5916", "#84ba35", "#2b5b16"];
 
 export const sow = { frame: -1 };
 export const seeds = [];
@@ -381,12 +381,16 @@ function spawnSeeds(x, y) {
   const ox = x * CELL;
   const oy = y * CELL;
   SEED_SPOTS.forEach(([px, py], index) => {
+    const jitterX = Math.floor(Math.random() * 5) - 2;
+    const jitterY = Math.floor(Math.random() * 3) - 1;
+    const arcJitter = Math.floor(Math.random() * 3) - 1;
     seeds.push({
-      x0: ox + 7,
-      y0: oy + 6,
-      x1: ox + px,
-      y1: oy + py,
-      color: SEED_COLORS[index % SEED_COLORS.length],
+      x0: ox + 7 + (index % 3) - 1 + Math.floor(Math.random() * 3) - 1,
+      y0: oy + 5 + (index % 2),
+      x1: ox + px + jitterX,
+      y1: oy + py + jitterY,
+      arc: 5 + (index % 4) + arcJitter,
+      color: SEED_COLORS[Math.floor(Math.random() * SEED_COLORS.length)],
       life: SOW_FRAMES,
       max: SOW_FRAMES,
     });
@@ -424,8 +428,7 @@ export function updateSow() {
 }
 
 export function bagPose() {
-  const t = sow.frame < 0 ? 0 : Math.sin((sow.frame / SOW_FRAMES) * Math.PI);
-  return { facing: player.facing, t };
+  return { facing: player.facing, t: 0 };
 }
 
 const ITEM_START = items.map((item) => ({
