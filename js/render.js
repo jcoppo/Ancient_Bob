@@ -1,5 +1,5 @@
 import { CELL, COLS, ROWS } from "./config.js";
-import { BUSH, BUSH_STAGES, CORPSE, HOLD_ARMS, OUTLINE, SPRITES, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js";
+import { CORPSE, HOLD_ARMS, OUTLINE, SPRITES, TREE_PALETTE, TREE_SCALE, TREE_SPRITES, WALK_SPRITES, WHEAT_GROWTH_PIXELS, WHEAT_PALETTE, WHEAT_SPRITES } from "./pixels.js";
 import { bagPose, crops, groundItems, heldItem, hoePose, leaves, seeds, swordPose } from "./items.js";
 import { BUILDINGS, BUSHES, MAP, TREES, areaIndex, buildingRoofPixels } from "./world.js";
 import { player, playerInWater } from "./player.js";
@@ -125,20 +125,20 @@ function drawTree(tree) {
   }
 }
 
+const BUSH_MARKS = "b1234";
+const bushImage = new Image();
+bushImage.src = new URL("../assets/images/bushes/bush6.png", import.meta.url).href;
+
 function drawBush(x, y) {
-  const pixels = BUSH_STAGES[BUSHES[y][x]];
-  if (!pixels) return;
-  const ox = x * CELL;
-  const oy = y * CELL;
-  for (let py = 0; py < CELL; py++) {
-    const row = pixels[py];
-    for (let px = 0; px < CELL; px++) {
-      const color = BUSH[row[px]];
-      if (!color) continue;
-      ctx.fillStyle = color;
-      ctx.fillRect(ox + px, oy + py, 1, 1);
-    }
-  }
+  if (!bushImage.complete || !bushImage.naturalWidth) return;
+  if (!BUSH_MARKS.includes(BUSHES[y][x])) return;
+  const width = bushImage.naturalWidth;
+  const height = bushImage.naturalHeight;
+  ctx.drawImage(
+    bushImage,
+    x * CELL + Math.floor((CELL - width) / 2),
+    (y + 1) * CELL - height,
+  );
 }
 
 const STONE = "#e4dcc8";
@@ -811,7 +811,7 @@ function drawDepthScene(slideX, slideY) {
 
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
-      if (!BUSH_STAGES[BUSHES[y][x]]) continue;
+      if (!BUSH_MARKS.includes(BUSHES[y][x])) continue;
       add((y + 1) * CELL, 1, () => drawBush(x, y));
     }
   }
